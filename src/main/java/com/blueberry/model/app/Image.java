@@ -18,4 +18,5 @@ public class Image {
 
     @Column(columnDefinition = "TEXT")
     private String imageLink;
+
 }

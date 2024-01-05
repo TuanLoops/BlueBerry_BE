@@ -20,7 +20,8 @@ public class Status {
 
     private String body;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "status_id")
     private List<Image> imageList;
 
 }
