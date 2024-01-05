@@ -9,5 +9,5 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/accounts/api/auth")
 @CrossOrigin("*")
 @AllArgsConstructor
-public class AccountController {
+public class AppUserController {
 }

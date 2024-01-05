@@ -2,10 +2,12 @@ package com.blueberry.controller;
 
 import com.blueberry.model.acc.JwtResponse;
 import com.blueberry.model.acc.User;
+import com.blueberry.model.dto.UserRequest;
 import com.blueberry.service.RoleService;
 import com.blueberry.service.UserService;
 import com.blueberry.service.impl.JwtService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,5 +37,10 @@ public class UserController {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         User currentUser = userService.findByEmail(user.getEmail());
         return ResponseEntity.ok(new JwtResponse(jwt, currentUser.getUserId(), userDetails.getUsername(), userDetails.getAuthorities()));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody UserRequest userRequest){
+        return new ResponseEntity<>("success", HttpStatus.OK);
     }
 }
