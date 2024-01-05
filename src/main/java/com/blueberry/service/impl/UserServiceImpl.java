@@ -24,29 +24,27 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email);
-
-        if (user == null) {
+        Optional<User> user = userRepository.findByEmail(email);
+        if (user.isEmpty()) {
             throw new UsernameNotFoundException("User not found");
         }
-
-        if (this.checkLogin(user)) {
-            return UserPrinciple.build(user);
+        if (this.checkLogin(user.get())) {
+            return UserPrinciple.build(user.get());
         }
 
         boolean enable = false;
         boolean accountNonExpired = false;
         boolean credentialsNonExpired = false;
         boolean accountNonLocked = false;
-        return new org.springframework.security.core.userdetails.User(user.getEmail(),
-                user.getPassword(), enable, accountNonExpired, credentialsNonExpired,
+        return new org.springframework.security.core.userdetails.User(user.get().getEmail(),
+                user.get().getPassword(), enable, accountNonExpired, credentialsNonExpired,
                 accountNonLocked, null);
     }
 
 
     @Override
-    public void save(User User) {
-        userRepository.save(User);
+    public User save(User User) {
+        return userRepository.save(User);
     }
 
     @Override
@@ -55,7 +53,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findByEmail(String email) {
+    public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
@@ -70,7 +68,7 @@ public class UserServiceImpl implements UserService {
         } else {
             email = principle.toString();
         }
-        user = this.findByEmail(email);
+        user = this.findByEmail(email).get();
         return user;
     }
 
@@ -93,7 +91,7 @@ public class UserServiceImpl implements UserService {
         Iterable<User> users = this.findAll();
         boolean isCorrectUser = false;
         for (User currentUser : users) {
-            if (currentUser.getEmail().equals(User.getEmail()) && currentUser.getPassword().equals(User.getPassword()) && currentUser.isActivated()) {
+            if (currentUser.getEmail().equals(User.getEmail()) && currentUser.getPassword().equals(User.getPassword())&& !currentUser.isBanned()) {
                 isCorrectUser = true;
                 break;
             }
@@ -102,16 +100,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean isRegister(User User) {
-        boolean isRegister = false;
-        Iterable<User> users = this.findAll();
-        for (User currentUser : users) {
-            if (User.getEmail().equals(currentUser.getEmail())) {
-                isRegister = true;
-                break;
-            }
-        }
-        return isRegister;
+    public boolean isRegister(String email) {
+       Optional<User> user = this.findByEmail(email);
+        return user.isPresent();
     }
 
     public boolean isCorrectConfirmPassword(User User) {

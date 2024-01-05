@@ -3,6 +3,7 @@ package com.blueberry.controller;
 import com.blueberry.model.acc.JwtResponse;
 import com.blueberry.model.acc.User;
 import com.blueberry.model.dto.UserRequest;
+import com.blueberry.service.RegisterService;
 import com.blueberry.service.RoleService;
 import com.blueberry.service.UserService;
 import com.blueberry.service.impl.JwtService;
@@ -17,6 +18,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/users/api/auth")
 @CrossOrigin("*")
@@ -28,6 +31,7 @@ public class UserController {
     private UserService userService;
     private RoleService roleService;
     private PasswordEncoder passwordEncoder;
+    private RegisterService registerService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
@@ -35,12 +39,21 @@ public class UserController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtService.generateTokenLogin(authentication);
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User currentUser = userService.findByEmail(user.getEmail());
-        return ResponseEntity.ok(new JwtResponse(jwt, currentUser.getUserId(), userDetails.getUsername(), userDetails.getAuthorities()));
+        Optional<User> currentUser = userService.findByEmail(user.getEmail());
+        if(currentUser.get().isActivated()){
+            return ResponseEntity.ok(new JwtResponse(jwt, currentUser.get().getUserId(), userDetails.getUsername(), userDetails.getAuthorities()));
+        }
+        return new ResponseEntity<>("Chua kich hoat",HttpStatus.FORBIDDEN);
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserRequest userRequest){
-        return new ResponseEntity<>("success", HttpStatus.OK);
+        if(userService.isRegister(userRequest.getEmail())){
+            return new ResponseEntity<>("Email đã được sử dụng", HttpStatus.CONFLICT);
+        }
+        if (!userRequest.getPassword().equals(userRequest.getConfirmPassword())){
+            return new ResponseEntity<>("Xác nhận mật khẩu không khớp", HttpStatus.BAD_REQUEST);
+        }
+        return registerService.register(userRequest);
     }
 }

@@ -7,11 +7,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import java.util.Optional;
 
 public interface UserService extends UserDetailsService {
-    void save(User User);
+    User save(User User);
 
     Iterable<User> findAll();
 
-    User findByEmail(String email);
+    Optional<User> findByEmail(String email);
 
     User getCurrentEmail();
 
@@ -21,7 +21,7 @@ public interface UserService extends UserDetailsService {
 
     boolean checkLogin(User User);
 
-    boolean isRegister(User User);
+    boolean isRegister(String email);
 
     boolean isCorrectConfirmPassword(User User);
 }
