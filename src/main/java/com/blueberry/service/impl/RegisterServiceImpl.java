@@ -31,7 +31,6 @@ public class RegisterServiceImpl implements RegisterService {
     private EmailService emailService;
     @Override
     public ResponseEntity<?> register(UserRequest userRequest) {
-        System.out.println(userRequest.toString());
         List<Role> roles = new ArrayList<>();
         roles.add(new Role(1L,""));
         User user = new User();
@@ -40,7 +39,6 @@ public class RegisterServiceImpl implements RegisterService {
         user.setRoleList(roles);
         try {
             user= userService.save(user);
-            System.out.println(user.toString());
             AppUser userApp = new AppUser();
             userApp.setFirstName(userRequest.getFirstName());
             userApp.setLastName(userRequest.getLastName());
