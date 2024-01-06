@@ -43,7 +43,7 @@ public class UserController {
         if(currentUser.get().isActivated()){
             return ResponseEntity.ok(new JwtResponse(jwt, currentUser.get().getUserId(), userDetails.getUsername(), userDetails.getAuthorities()));
         }
-        return new ResponseEntity<>("Chua kich hoat",HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>("Chưa kích hoạt",HttpStatus.FORBIDDEN);
     }
 
     @PostMapping("/register")
@@ -55,5 +55,10 @@ public class UserController {
             return new ResponseEntity<>("Xác nhận mật khẩu không khớp", HttpStatus.BAD_REQUEST);
         }
         return registerService.register(userRequest);
+    }
+    @GetMapping("/register/confirm")
+    public ResponseEntity<?> confirmUser(@RequestParam String token){
+        System.out.println(token);
+        return registerService.verificationUser(token);
     }
 }

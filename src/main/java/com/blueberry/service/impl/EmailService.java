@@ -9,12 +9,16 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.UnsupportedEncodingException;
 
 @Service
 @AllArgsConstructor
 public class EmailService {
     private final static Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
     private final JavaMailSender mailSender;
+    @Transactional
     @Async
     public void send(String to, String emailContent) {
         try {
@@ -23,11 +27,14 @@ public class EmailService {
             helper.setText(emailContent, true);
             helper.setTo(to);
             helper.setSubject("Xác nhận email");
-            helper.setFrom("blueberry.webservice@gmail.com");
+            helper.setFrom("blueberry.webservice@gmail.com","Blueberry");
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
             LOGGER.error("failed to send email", e);
             throw new IllegalStateException("failed to send email");
+        } catch (UnsupportedEncodingException e) {
+            LOGGER.error("Unsupported Encoding", e);
+            throw new RuntimeException(e);
         }
     }
 
