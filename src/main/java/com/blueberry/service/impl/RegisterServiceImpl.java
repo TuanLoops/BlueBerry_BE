@@ -4,6 +4,7 @@ import com.blueberry.model.acc.Role;
 import com.blueberry.model.acc.User;
 import com.blueberry.model.app.AppUser;
 import com.blueberry.model.dto.UserRequest;
+import com.blueberry.repository.RoleRepository;
 import com.blueberry.service.AppUserService;
 import com.blueberry.service.RegisterService;
 import com.blueberry.service.UserService;
@@ -29,11 +30,14 @@ public class RegisterServiceImpl implements RegisterService {
     private AppUserService appUserService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private RoleRepository roleRepository;
     @Override
     public ResponseEntity<?> register(UserRequest userRequest) {
         System.out.println(userRequest.toString());
         List<Role> roles = new ArrayList<>();
-        roles.add(new Role(1L,""));
+        Role role = roleRepository.findByRoleName("ROLE_USER").get();
+        roles.add(role);
         User user = new User();
         user.setEmail(userRequest.getEmail());
         user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
