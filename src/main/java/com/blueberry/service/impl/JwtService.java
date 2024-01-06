@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Service
@@ -53,5 +55,21 @@ public class JwtService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody().getSubject();
+    }
+    public String generateEmailToken(String email, Long expireTime){
+        return Jwts.builder()
+                .setSubject((email))
+                .setIssuedAt(new Date())
+                .setExpiration(new Date((new Date()).getTime() +expireTime))
+                .signWith(SECRET_KEY, SignatureAlgorithm.HS512)
+                .compact();
+    }
+    public boolean validateEmailToken(String token){
+        try {
+           Jwts.parserBuilder().setSigningKey(SECRET_KEY).build().parseClaimsJws(token);
+           return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

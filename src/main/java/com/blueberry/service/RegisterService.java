@@ -5,4 +5,5 @@ import org.springframework.http.ResponseEntity;
 
 public interface RegisterService {
     ResponseEntity<?> register(UserRequest userRequest);
+    ResponseEntity<?> verificationUser(String token);
 }
