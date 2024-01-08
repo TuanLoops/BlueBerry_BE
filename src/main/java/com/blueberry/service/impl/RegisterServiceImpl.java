@@ -3,6 +3,7 @@ package com.blueberry.service.impl;
 import com.blueberry.model.acc.Role;
 import com.blueberry.model.acc.User;
 import com.blueberry.model.app.AppUser;
+import com.blueberry.model.dto.MessageResponse;
 import com.blueberry.model.dto.UserRequest;
 import com.blueberry.service.AppUserService;
 import com.blueberry.service.RegisterService;
@@ -48,10 +49,10 @@ public class RegisterServiceImpl implements RegisterService {
             user = userService.save(user);
             userApp.setUser(user);
             appUserService.save(userApp);
-            emailService.send(userRequest.getEmail(), buildMail(fullName, "http://localhost:8080/users/api/auth/register/confirm?token=" + token));
-            return new ResponseEntity<>("Thành Công", HttpStatus.CREATED);
+            emailService.send(userRequest.getEmail(), buildMail(fullName, "http://localhost:5173/confirm?token=" + token));
+            return new ResponseEntity<>(new MessageResponse("Registered successfully"), HttpStatus.CREATED);
         } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -69,21 +70,37 @@ public class RegisterServiceImpl implements RegisterService {
                 "</div>";
     }
 
+    @Override
     public ResponseEntity<?> verificationUser(String token) {
         if (token == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>( new MessageResponse("Token required"),HttpStatus.BAD_REQUEST);
         }
         if (jwtService.validateEmailToken(token)) {
             String email = jwtService.getEmailFromJwtToken(token);
             Optional<User> user = userService.findByEmail(email);
             if (user.isPresent()) {
+                if(user.get().isActivated()){
+                    return new ResponseEntity<>(new MessageResponse("Account has been activated"),HttpStatus.CONFLICT);
+                }
                 user.get().setActivated(true);
                 userService.save(user.get());
-                return new ResponseEntity<>(HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new MessageResponse("Account has been activated successfully"),HttpStatus.OK);
             }
         }
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Account activation failed"),HttpStatus.BAD_REQUEST);
     }
+
+    @Override
+    public ResponseEntity<?> reSendEmail(String email) {
+        Optional<User> user = userService.findByEmail(email);
+        if (user.isPresent()) {
+            Optional<AppUser> appUser = appUserService.findById(user.get().getUserId());
+            String token = jwtService.generateEmailToken(email, EXPIRE_TIME);
+            String fullName = appUser.get().getFirstName()+" "+appUser.get().getLastName();
+            emailService.send(email, buildMail(fullName, "http://localhost:8080/users/api/auth/register/confirm?token=" + token));
+            return new ResponseEntity<>(new MessageResponse("Email has been sent"),HttpStatus.OK);
+        }
+        return new ResponseEntity<>(new MessageResponse("The email doesn't exist"),HttpStatus.BAD_REQUEST);
+    }
+
 }
