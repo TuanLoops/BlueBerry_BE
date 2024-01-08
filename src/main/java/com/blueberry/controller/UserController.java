@@ -2,8 +2,8 @@ package com.blueberry.controller;
 
 import com.blueberry.model.acc.JwtResponse;
 import com.blueberry.model.acc.User;
-import com.blueberry.model.dto.UserRequest;
-
+import com.blueberry.model.dto.MessageResponse;
+import com.blueberry.model.request.UserRequest;
 import com.blueberry.service.RegisterService;
 import com.blueberry.service.RoleService;
 import com.blueberry.service.UserService;
@@ -21,7 +21,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
 
 import java.util.Optional;
 
@@ -47,27 +46,45 @@ public class UserController {
         String jwt = jwtService.generateTokenLogin(authentication);
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         Optional<User> currentUser = userService.findByEmail(user.getEmail());
-        if(currentUser.get().isActivated()){
+        if (currentUser.get().isActivated()) {
             return ResponseEntity.ok(new JwtResponse(jwt, currentUser.get().getId(), userDetails.getUsername(), userDetails.getAuthorities()));
         }
-        return new ResponseEntity<>("Chưa kích hoạt",HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(new MessageResponse("Account has not been activated"), HttpStatus.FORBIDDEN);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody UserRequest userRequest){
-        if(userService.isRegister(userRequest.getEmail())){
-            return new ResponseEntity<>("Email đã được sử dụng", HttpStatus.CONFLICT);
+    public ResponseEntity<?> register(@RequestBody UserRequest userRequest) {
+        if (userService.isRegister(userRequest.getEmail())) {
+            return new ResponseEntity<>(new MessageResponse("Email has been used"), HttpStatus.CONFLICT);
         }
-        if (!userRequest.getPassword().equals(userRequest.getConfirmPassword())){
-            return new ResponseEntity<>("Xác nhận mật khẩu không khớp", HttpStatus.BAD_REQUEST);
+        if (!userRequest.getPassword().equals(userRequest.getConfirmPassword())) {
+            return new ResponseEntity<>( new MessageResponse("Confirm password is wrong"), HttpStatus.BAD_REQUEST);
         }
         return registerService.register(userRequest);
     }
+
     @GetMapping("/register/confirm")
-    public ResponseEntity<?> confirmUser(@RequestParam String token){
-        System.out.println(token);
+    public ResponseEntity<?> confirmUser(@RequestParam String token) {
         return registerService.verificationUser(token);
     }
 
+    @GetMapping("/resend-email")
+    private ResponseEntity<?> sendEmail(@RequestParam String email) {
+        if (email == null) {
+            return new ResponseEntity<>(new MessageResponse("Please enter your email"), HttpStatus.BAD_REQUEST);
+        }
+        return registerService.reSendEmail(email);
+    }
+
+    @PutMapping("/change-password")
+    private ResponseEntity<?> changePassword(@RequestBody UserRequest userRequest) {
+        User currentUser = userService.getCurrentUser();
+        if (passwordEncoder.matches(userRequest.getOldPassword(), currentUser.getPassword())) {
+            currentUser.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+            userService.save(currentUser);
+            return new ResponseEntity<>(new MessageResponse("Change password successfully"), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(new MessageResponse("Old password is not correct"), HttpStatus.FORBIDDEN);
+    }
 
 }
