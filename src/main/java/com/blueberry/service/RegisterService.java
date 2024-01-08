@@ -1,6 +1,6 @@
 package com.blueberry.service;
 
-import com.blueberry.model.dto.UserRequest;
+import com.blueberry.model.request.UserRequest;
 import org.springframework.http.ResponseEntity;
 
 public interface RegisterService {

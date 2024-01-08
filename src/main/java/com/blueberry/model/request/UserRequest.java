@@ -1,4 +1,4 @@
-package com.blueberry.model.dto;
+package com.blueberry.model.request;
 
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;

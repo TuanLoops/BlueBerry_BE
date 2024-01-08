@@ -4,7 +4,7 @@ import com.blueberry.model.acc.Role;
 import com.blueberry.model.acc.User;
 import com.blueberry.model.app.AppUser;
 import com.blueberry.model.dto.MessageResponse;
-import com.blueberry.model.dto.UserRequest;
+import com.blueberry.model.request.UserRequest;
 import com.blueberry.service.AppUserService;
 import com.blueberry.service.RegisterService;
 import com.blueberry.service.UserService;

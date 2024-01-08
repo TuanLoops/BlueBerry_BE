@@ -2,10 +2,10 @@ package com.blueberry.controller;
 
 import com.blueberry.model.acc.User;
 import com.blueberry.model.app.AppUser;
+import com.blueberry.model.app.Image;
 import com.blueberry.model.dto.AppUserDTO;
 import com.blueberry.service.impl.AppUserServiceImpl;
 import com.blueberry.service.impl.UserServiceImpl;
-import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,9 @@ import java.util.Optional;
 public class AppUserController {
     @Autowired
     private AppUserServiceImpl appUserService;
-    private ModelMapper modelMapper = new ModelMapper();
+    @Autowired
+    private ModelMapper modelMapper;
+    @Autowired
     private UserServiceImpl userService;
     @GetMapping("/{userId}")
     public ResponseEntity<AppUserDTO> getAppUser(@PathVariable Long userId) {
@@ -45,5 +47,24 @@ public class AppUserController {
             return new ResponseEntity<>(modelMapper.map(appUserEdit,AppUserDTO.class),HttpStatus.OK);
         }
         return  new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @PatchMapping("/change-avatar")
+    public ResponseEntity<Image> changeAvatar(@RequestBody Image image){
+        User user = userService.getCurrentEmail();
+        Optional<AppUser> appUser = appUserService.findById(user.getUserId());
+        AppUser appUserEdit= appUser.get();
+        appUserEdit.setAvatarImage(image.getImageLink());
+        appUserService.save(appUserEdit);
+        return new ResponseEntity<>(image,HttpStatus.OK);
+    }
+    @PatchMapping("/change-banner")
+    public ResponseEntity<Image> changeBanner(@RequestBody Image image){
+        User user = userService.getCurrentEmail();
+        Optional<AppUser> appUser = appUserService.findById(user.getUserId());
+        AppUser appUserEdit= appUser.get();
+        appUserEdit.setBannerImage(image.getImageLink());
+        appUserService.save(appUserEdit);
+        return new ResponseEntity<>(image,HttpStatus.OK);
     }
 }
