@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getCurrentEmail() {
+    public User getCurrentUser() {
         User user;
         String email;
         Object principle = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -77,8 +77,9 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(id);
     }
 
+
     @Override
-    public UserDetails loadAccountById(Long id) {
+    public UserDetails loadUserById(Long id) {
         Optional<User> user = userRepository.findById(id);
         if (user.isEmpty()) {
             throw new NullPointerException();

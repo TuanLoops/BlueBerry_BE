@@ -47,7 +47,7 @@ public class RegisterServiceImpl implements RegisterService {
             user = userService.save(user);
             userApp.setUser(user);
             appUserService.save(userApp);
-            emailService.send(userRequest.getEmail(), buildMail(fullName, "http://localhost:8080/users/api/auth/register/confirm?token=" + token));
+            emailService.send(userRequest.getEmail(), buildMail(fullName, "http://localhost:8080/auth/api/users/register/confirm?token=" + token));
             return new ResponseEntity<>("Thành Công", HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
