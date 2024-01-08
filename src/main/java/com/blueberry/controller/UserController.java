@@ -9,6 +9,9 @@ import com.blueberry.service.RoleService;
 import com.blueberry.service.UserService;
 import com.blueberry.service.impl.JwtService;
 import lombok.AllArgsConstructor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,10 +25,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/users/api/auth")
+@RequestMapping("/auth/api/users")
 @CrossOrigin("*")
 @AllArgsConstructor
 public class UserController {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     private AuthenticationManager authenticationManager;
     private JwtService jwtService;
@@ -42,9 +47,8 @@ public class UserController {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         Optional<User> currentUser = userService.findByEmail(user.getEmail());
         if (currentUser.get().isActivated()) {
-            return ResponseEntity.ok(new JwtResponse(jwt, currentUser.get().getUserId(), userDetails.getUsername(), userDetails.getAuthorities()));
+            return ResponseEntity.ok(new JwtResponse(jwt, currentUser.get().getId(), userDetails.getUsername(), userDetails.getAuthorities()));
         }
-
         return new ResponseEntity<>(new MessageResponse("Account has not been activated"), HttpStatus.FORBIDDEN);
     }
 
@@ -74,7 +78,7 @@ public class UserController {
 
     @PutMapping("/change-password")
     private ResponseEntity<?> changePassword(@RequestBody UserRequest userRequest) {
-        User currentUser = userService.getCurrentEmail();
+        User currentUser = userService.getCurrentUser();
         if (passwordEncoder.matches(userRequest.getOldPassword(), currentUser.getPassword())) {
             currentUser.setPassword(passwordEncoder.encode(userRequest.getPassword()));
             userService.save(currentUser);

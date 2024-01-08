@@ -13,11 +13,11 @@ public interface UserService extends UserDetailsService {
 
     Optional<User> findByEmail(String email);
 
-    User getCurrentEmail();
+    User getCurrentUser();
 
     Optional<User> findById(Long id);
 
-    UserDetails loadAccountById(Long id);
+    UserDetails loadUserById(Long id);
 
     boolean checkLogin(User User);
 

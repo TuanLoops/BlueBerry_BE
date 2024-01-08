@@ -18,7 +18,7 @@ public class UserPrinciple implements UserDetails {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private Long userId;
+    private Long id;
     private String email;
     private String passWord;
     private Collection<? extends GrantedAuthority> roles;
@@ -28,11 +28,11 @@ public class UserPrinciple implements UserDetails {
         List<GrantedAuthority> authorities =
                 user.getRoleList()
                         .stream()
-                        .map(role -> new SimpleGrantedAuthority(role.getRoleName()))
+                        .map(role -> new SimpleGrantedAuthority(role.getName()))
                         .collect(Collectors.toList());
 
         return new UserPrinciple(
-                user.getUserId(),
+                user.getId(),
                 user.getEmail(),
                 user.getPassword(),
                 authorities

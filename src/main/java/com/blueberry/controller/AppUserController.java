@@ -6,6 +6,7 @@ import com.blueberry.model.app.Image;
 import com.blueberry.model.dto.AppUserDTO;
 import com.blueberry.service.impl.AppUserServiceImpl;
 import com.blueberry.service.impl.UserServiceImpl;
+import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,15 +16,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/appusers/api/auth")
+@RequestMapping("/auth/api/appusers")
 @CrossOrigin("*")
+@AllArgsConstructor
 public class AppUserController {
-    @Autowired
     private AppUserServiceImpl appUserService;
-    @Autowired
     private ModelMapper modelMapper;
-    @Autowired
     private UserServiceImpl userService;
+
     @GetMapping("/{userId}")
     public ResponseEntity<AppUserDTO> getAppUser(@PathVariable Long userId) {
         Optional<AppUser> appUser = appUserService.findById(userId);
@@ -34,13 +34,13 @@ public class AppUserController {
     }
     @PutMapping("/{userId}")
     public ResponseEntity<AppUserDTO> updateAppUser(@PathVariable Long userId, @RequestBody AppUserDTO appUserDTO) {
-        User user = userService.getCurrentEmail();
-        Optional<AppUser> appUser = appUserService.findById(user.getUserId());
+        User user = userService.getCurrentUser();
+        Optional<AppUser> appUser = appUserService.findById(user.getId());
         if (appUser.isPresent()) {
             AppUser appUserOld= appUser.get();
             AppUser appUserEdit =modelMapper.map(appUserDTO,AppUser.class);
             appUserEdit.setUser(appUserOld.getUser());
-            appUserEdit.setUserId(appUserOld.getUserId());
+            appUserEdit.setId(appUserOld.getId());
             appUserEdit.setAvatarImage(appUserOld.getAvatarImage());
             appUserEdit.setBannerImage(appUserOld.getBannerImage());
             appUserService.save(appUserEdit);
@@ -51,20 +51,18 @@ public class AppUserController {
 
     @PatchMapping("/change-avatar")
     public ResponseEntity<Image> changeAvatar(@RequestBody Image image){
-        User user = userService.getCurrentEmail();
-        Optional<AppUser> appUser = appUserService.findById(user.getUserId());
-        AppUser appUserEdit= appUser.get();
-        appUserEdit.setAvatarImage(image.getImageLink());
-        appUserService.save(appUserEdit);
+        User user = userService.getCurrentUser();
+        AppUser appUser = appUserService.findByUserName(user.getEmail());
+        appUser.setAvatarImage(image.getImageLink());
+        appUserService.save(appUser);
         return new ResponseEntity<>(image,HttpStatus.OK);
     }
     @PatchMapping("/change-banner")
     public ResponseEntity<Image> changeBanner(@RequestBody Image image){
-        User user = userService.getCurrentEmail();
-        Optional<AppUser> appUser = appUserService.findById(user.getUserId());
-        AppUser appUserEdit= appUser.get();
-        appUserEdit.setBannerImage(image.getImageLink());
-        appUserService.save(appUserEdit);
+        User user = userService.getCurrentUser();
+        AppUser appUser = appUserService.findByUserName(user.getEmail());
+        appUser.setBannerImage(image.getImageLink());
+        appUserService.save(appUser);
         return new ResponseEntity<>(image,HttpStatus.OK);
     }
 }

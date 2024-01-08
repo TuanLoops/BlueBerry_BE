@@ -1,9 +1,11 @@
 package com.blueberry.service.impl;
 
 
+import com.blueberry.model.acc.User;
 import com.blueberry.model.app.AppUser;
 import com.blueberry.repository.AppUserRepository;
 import com.blueberry.service.AppUserService;
+import com.blueberry.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ import java.util.Optional;
 public class AppUserServiceImpl implements AppUserService {
 
     private AppUserRepository appUserRepository;
+    private UserService userService;
     @Override
     public Iterable<AppUser> findAll() {
         return appUserRepository.findAll();
@@ -32,5 +35,16 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     public void delete(Long id) {
         appUserRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<AppUser> findByUser(User user) {
+        return appUserRepository.findByUser(user);
+    }
+
+    @Override
+    public AppUser findByUserName(String username) {
+        Optional<User> user = userService.findByEmail(username);
+        return appUserRepository.findByUser(user.get()).get();
     }
 }

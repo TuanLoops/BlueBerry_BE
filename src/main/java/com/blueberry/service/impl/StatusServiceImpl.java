@@ -33,4 +33,9 @@ public class StatusServiceImpl implements StatusService {
     public void delete(Long id) {
         statusRepository.deleteById(id);
     }
+
+    @Override
+    public Iterable<Status> findAllByAuthorId(Long id) {
+        return statusRepository.findAllByAuthorId(id);
+    }
 }
