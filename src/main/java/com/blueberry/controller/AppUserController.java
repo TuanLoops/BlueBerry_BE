@@ -4,11 +4,10 @@ import com.blueberry.model.acc.User;
 import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.Image;
 import com.blueberry.model.dto.AppUserDTO;
-import com.blueberry.service.impl.AppUserServiceImpl;
-import com.blueberry.service.impl.UserServiceImpl;
+import com.blueberry.service.AppUserService;
+import com.blueberry.service.UserService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,20 +19,20 @@ import java.util.Optional;
 @CrossOrigin("*")
 @AllArgsConstructor
 public class AppUserController {
-    private AppUserServiceImpl appUserService;
+    private AppUserService appUserService;
     private ModelMapper modelMapper;
-    private UserServiceImpl userService;
+    private UserService userService;
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<AppUserDTO> getAppUser(@PathVariable Long userId) {
-        Optional<AppUser> appUser = appUserService.findById(userId);
+    @GetMapping("/{id}")
+    public ResponseEntity<AppUserDTO> getAppUser(@PathVariable Long id) {
+        Optional<AppUser> appUser = appUserService.findById(id);
         if (appUser.isPresent()) {
             return new ResponseEntity<>(modelMapper.map(appUser,AppUserDTO.class),HttpStatus.OK);
         }
         return  new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
-    @PutMapping("/{userId}")
-    public ResponseEntity<AppUserDTO> updateAppUser(@PathVariable Long userId, @RequestBody AppUserDTO appUserDTO) {
+    @PutMapping("/{id}")
+    public ResponseEntity<AppUserDTO> updateAppUser(@PathVariable Long id, @RequestBody AppUserDTO appUserDTO) {
         User user = userService.getCurrentUser();
         Optional<AppUser> appUser = appUserService.findById(user.getId());
         if (appUser.isPresent()) {

@@ -7,6 +7,7 @@ import com.blueberry.model.dto.MessageResponse;
 import com.blueberry.model.request.UserRequest;
 import com.blueberry.service.AppUserService;
 import com.blueberry.service.RegisterService;
+import com.blueberry.service.RoleService;
 import com.blueberry.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ public class RegisterServiceImpl implements RegisterService {
     private UserService userService;
     private AppUserService appUserService;
     private EmailService emailService;
+    private RoleService roleService;
 
     private JwtService jwtService;
     private final Long EXPIRE_TIME = 86400000L;
@@ -34,7 +36,8 @@ public class RegisterServiceImpl implements RegisterService {
     @Override
     public ResponseEntity<?> register(UserRequest userRequest) {
         List<Role> roles = new ArrayList<>();
-        roles.add(new Role(1L, ""));
+        Role role = roleService.findByName("ROLE_USER");
+        roles.add(role);
         User user = new User();
         user.setEmail(userRequest.getEmail());
         user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
