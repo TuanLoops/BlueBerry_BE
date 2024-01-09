@@ -8,4 +8,8 @@ import org.springframework.stereotype.Repository;
 public interface StatusRepository extends JpaRepository<Status, Long> {
 
     Iterable<Status> findAllByAuthorId(Long id);
+
+    Iterable<Status> findAllByAuthorIdAndIsDeleted(Long authorId, boolean isDeleted);
+
+    Iterable<Status> findAllByAuthorIdAndIsDeletedAndBodyContaining(Long authorId, boolean isDeleted, String query);
 }

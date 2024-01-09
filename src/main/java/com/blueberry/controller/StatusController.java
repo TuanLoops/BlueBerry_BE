@@ -41,9 +41,24 @@ public class StatusController {
 
     @GetMapping
     public ResponseEntity<Iterable<Status>> getAllByCurrentUser() {
+
+        User user = userService.getCurrentUser();
+
+        AppUser appUser = appUserService.findByUserName(user.getEmail());
+
+        Iterable<Status> statuses = statusService.findAllByAuthorIdAndIsDeleted(appUser.getId(), false);
+
+        return new ResponseEntity<>(statuses, HttpStatus.OK);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Iterable<Status>> getAllStatusByBodyContaining(@RequestParam("query") String query) {
         User user = userService.getCurrentUser();
         AppUser appUser = appUserService.findByUserName(user.getEmail());
-        return new ResponseEntity<>(statusService.findAllByAuthorId(appUser.getId()), HttpStatus.OK);
+
+        Iterable<Status> statuses = statusService.findAllByAuthorIdAndIsDeletedAndBodyContaining(appUser.getId(),false, query);
+
+        return new ResponseEntity<>(statuses, HttpStatus.OK);
     }
 
 

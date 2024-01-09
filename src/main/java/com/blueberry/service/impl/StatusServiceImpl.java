@@ -38,4 +38,14 @@ public class StatusServiceImpl implements StatusService {
     public Iterable<Status> findAllByAuthorId(Long id) {
         return statusRepository.findAllByAuthorId(id);
     }
+
+    @Override
+    public Iterable<Status> findAllByAuthorIdAndIsDeleted(Long authorId, boolean isDeleted) {
+        return statusRepository.findAllByAuthorIdAndIsDeleted(authorId, isDeleted);
+    }
+
+    @Override
+    public Iterable<Status> findAllByAuthorIdAndIsDeletedAndBodyContaining(Long authorId, boolean isDeleted, String query) {
+        return statusRepository.findAllByAuthorIdAndIsDeletedAndBodyContaining(authorId, isDeleted, query);
+    }
 }
