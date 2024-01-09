@@ -50,6 +50,7 @@ public class RegisterServiceImpl implements RegisterService {
             String token = jwtService.generateEmailToken(user.getEmail(), EXPIRE_TIME);
             user = userService.save(user);
             userApp.setUser(user);
+            userApp.setAvatarImage("https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png");
             appUserService.save(userApp);
             emailService.send(userRequest.getEmail(), buildMail(fullName, "http://localhost:5173/confirm?token=" + token));
             return new ResponseEntity<>(new MessageResponse("Registered successfully"), HttpStatus.CREATED);

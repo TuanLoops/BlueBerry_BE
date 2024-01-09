@@ -47,4 +47,10 @@ public class AppUserServiceImpl implements AppUserService {
         Optional<User> user = userService.findByEmail(username);
         return appUserRepository.findByUser(user.get()).get();
     }
+
+    @Override
+    public AppUser getCurrentAppUser() {
+        User user = userService.getCurrentUser();
+        return this.findByUserName(user.getEmail());
+    }
 }

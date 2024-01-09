@@ -1,15 +1,11 @@
 package com.blueberry.model.dto;
 
-import com.blueberry.model.app.AppUser;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
 
 @Data
 public class AppUserDTO {
-    private Long userId;
+    private Long id;
     private String firstName;
     private String lastName;
     private LocalDate dob;
@@ -18,5 +14,5 @@ public class AppUserDTO {
     private String bannerImage;
     private String hobbies;
     private String address;
-    private String email;
+    private UserDTO user;
 }
