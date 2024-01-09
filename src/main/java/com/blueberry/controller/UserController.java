@@ -53,6 +53,12 @@ public class UserController {
         return new ResponseEntity<>("Chưa kích hoạt",HttpStatus.FORBIDDEN);
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout() {
+        SecurityContextHolder.getContext().setAuthentication(null);
+        return new ResponseEntity<>("Đăng xuất thành công !!",HttpStatus.OK);
+    }
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserRequest userRequest){
         if(userService.isRegister(userRequest.getEmail())){
