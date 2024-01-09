@@ -10,4 +10,5 @@ public interface AppUserService extends GenericService<AppUser>{
     Optional<AppUser> findByUser(User user);
 
     AppUser findByUserName(String username);
+    AppUser getCurrentAppUser();
 }

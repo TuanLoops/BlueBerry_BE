@@ -3,9 +3,11 @@ package com.blueberry.service.impl;
 import com.blueberry.model.acc.Role;
 import com.blueberry.model.acc.User;
 import com.blueberry.model.app.AppUser;
-import com.blueberry.model.dto.UserRequest;
+import com.blueberry.model.dto.MessageResponse;
+import com.blueberry.model.request.UserRequest;
 import com.blueberry.service.AppUserService;
 import com.blueberry.service.RegisterService;
+import com.blueberry.service.RoleService;
 import com.blueberry.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,7 @@ public class RegisterServiceImpl implements RegisterService {
     private UserService userService;
     private AppUserService appUserService;
     private EmailService emailService;
+    private RoleService roleService;
 
     private JwtService jwtService;
     private final Long EXPIRE_TIME = 86400000L;
@@ -33,7 +36,8 @@ public class RegisterServiceImpl implements RegisterService {
     @Override
     public ResponseEntity<?> register(UserRequest userRequest) {
         List<Role> roles = new ArrayList<>();
-        roles.add(new Role(1L, ""));
+        Role role = roleService.findByName("ROLE_USER");
+        roles.add(role);
         User user = new User();
         user.setEmail(userRequest.getEmail());
         user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
@@ -46,11 +50,12 @@ public class RegisterServiceImpl implements RegisterService {
             String token = jwtService.generateEmailToken(user.getEmail(), EXPIRE_TIME);
             user = userService.save(user);
             userApp.setUser(user);
+            userApp.setAvatarImage("https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png");
             appUserService.save(userApp);
-            emailService.send(userRequest.getEmail(), buildMail(fullName, "http://localhost:8080/auth/api/users/register/confirm?token=" + token));
-            return new ResponseEntity<>("Thành Công", HttpStatus.CREATED);
+            emailService.send(userRequest.getEmail(), buildMail(fullName, "http://localhost:5173/confirm?token=" + token));
+            return new ResponseEntity<>(new MessageResponse("Registered successfully"), HttpStatus.CREATED);
         } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -68,21 +73,37 @@ public class RegisterServiceImpl implements RegisterService {
                 "</div>";
     }
 
+    @Override
     public ResponseEntity<?> verificationUser(String token) {
         if (token == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>( new MessageResponse("Token required"),HttpStatus.BAD_REQUEST);
         }
         if (jwtService.validateEmailToken(token)) {
             String email = jwtService.getEmailFromJwtToken(token);
             Optional<User> user = userService.findByEmail(email);
             if (user.isPresent()) {
+                if(user.get().isActivated()){
+                    return new ResponseEntity<>(new MessageResponse("Account has been activated"),HttpStatus.CONFLICT);
+                }
                 user.get().setActivated(true);
                 userService.save(user.get());
-                return new ResponseEntity<>(HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new MessageResponse("Account has been activated successfully"),HttpStatus.OK);
             }
         }
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Account activation failed"),HttpStatus.BAD_REQUEST);
     }
+
+    @Override
+    public ResponseEntity<?> reSendEmail(String email) {
+        Optional<User> user = userService.findByEmail(email);
+        if (user.isPresent()) {
+            AppUser appUser = appUserService.findByUserName(user.get().getEmail());
+            String token = jwtService.generateEmailToken(email, EXPIRE_TIME);
+            String fullName = appUser.getFirstName()+" "+appUser.getLastName();
+            emailService.send(email, buildMail(fullName, "http://localhost:8080/users/api/auth/register/confirm?token=" + token));
+            return new ResponseEntity<>(new MessageResponse("Email has been sent"),HttpStatus.OK);
+        }
+        return new ResponseEntity<>(new MessageResponse("The email doesn't exist"),HttpStatus.BAD_REQUEST);
+    }
+
 }
