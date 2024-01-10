@@ -5,6 +5,7 @@ import com.blueberry.model.app.Status;
 import com.blueberry.repository.StatusRepository;
 import com.blueberry.service.StatusService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -42,6 +43,11 @@ public class StatusServiceImpl implements StatusService {
     @Override
     public Iterable<Status> findAllByAuthorIdAndIsDeleted(Long authorId, boolean isDeleted) {
         return statusRepository.findAllByAuthorIdAndIsDeleted(authorId, isDeleted);
+    }
+
+    @Override
+    public Iterable<Status> findAllByAuthorId(Long authorId, Sort sort) {
+        return statusRepository.findAllByAuthorIdAndIsDeleted(authorId, false, sort);
     }
 
     @Override
