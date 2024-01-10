@@ -8,6 +8,7 @@ import com.blueberry.service.AppUserService;
 import com.blueberry.service.StatusService;
 import com.blueberry.service.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -46,7 +47,7 @@ public class StatusController {
 
         AppUser appUser = appUserService.findByUserName(user.getEmail());
 
-        Iterable<Status> statuses = statusService.findAllByAuthorIdAndIsDeleted(appUser.getId(), false);
+        Iterable<Status> statuses = statusService.findAllByAuthorId(appUser.getId(), Sort.by(Sort.Direction.DESC, "lastActivity"));
 
         return new ResponseEntity<>(statuses, HttpStatus.OK);
     }
