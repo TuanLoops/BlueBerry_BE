@@ -20,14 +20,14 @@ public class EmailService {
     private final JavaMailSender mailSender;
     @Transactional
     @Async
-    public void send(String to, String emailContent) {
+    public void send(String to,String title, String emailContent) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
             helper.setText(emailContent, true);
             helper.setTo(to);
-            helper.setSubject("Xác nhận email");
-            helper.setFrom("blueberry.webservice@gmail.com","Blueberry");
+            helper.setSubject(title);
+            helper.setFrom("blueberry.webservice@gmail.com","Blueberry Network");
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
             LOGGER.error("failed to send email", e);
