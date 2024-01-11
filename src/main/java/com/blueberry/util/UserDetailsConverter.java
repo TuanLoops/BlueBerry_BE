@@ -18,6 +18,7 @@ public class UserDetailsConverter implements Converter<AppUser, UserDetails> {
         userDetails.setLastName(user.getLastName());
         userDetails.setDob(user.getDob());
         userDetails.setPhoneNumber(user.getPhoneNumber());
+        userDetails.setFullName(user.getFirstName()+" "+user.getLastName());
         userDetails.setHobbies(user.getHobbies());
         userDetails.setEmail(user.getUser().getEmail());
         return userDetails;

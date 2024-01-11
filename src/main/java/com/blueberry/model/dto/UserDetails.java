@@ -9,6 +9,7 @@ public class UserDetails {
         private Long id;
         private String firstName;
         private String lastName;
+        private String fullName;
         private LocalDate dob;
         private int phoneNumber;
         private String avatarImage;
