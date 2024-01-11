@@ -4,6 +4,7 @@ import com.blueberry.model.acc.User;
 import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.Image;
 import com.blueberry.model.dto.AppUserDTO;
+import com.blueberry.model.dto.MessageResponse;
 import com.blueberry.model.dto.UserDetails;
 import com.blueberry.service.AppUserService;
 import com.blueberry.service.UserService;
@@ -48,26 +49,29 @@ public class AppUserController {
         return new ResponseEntity<>(appUserDTO,HttpStatus.OK);
     }
     @PutMapping("/{id}")
-    public ResponseEntity<AppUserDTO> updateAppUser(@PathVariable Long id, @RequestBody AppUserDTO appUserDTO) {
-        User user = userService.getCurrentUser();
+    public ResponseEntity<?> updateAppUser(@PathVariable Long id, @RequestBody UserDetails userDetails) {
+        User user = userService.findById(id).get();
+        User currentUser = userService.getCurrentUser();
+        if(!user.getEmail().equals(currentUser.getEmail())){
+            return new ResponseEntity<>(new MessageResponse("Unauthorized"),HttpStatus.FORBIDDEN);
+        }
         Optional<AppUser> appUser = appUserService.findById(user.getId());
         if (appUser.isPresent()) {
             AppUser appUserOld= appUser.get();
-            AppUser appUserEdit =modelMapper.map(appUserDTO,AppUser.class);
+            AppUser appUserEdit =modelMapper.map(userDetails,AppUser.class);
             appUserEdit.setUser(appUserOld.getUser());
             appUserEdit.setId(appUserOld.getId());
             appUserEdit.setAvatarImage(appUserOld.getAvatarImage());
             appUserEdit.setBannerImage(appUserOld.getBannerImage());
             appUserService.save(appUserEdit);
-            return new ResponseEntity<>(modelMapper.map(appUserEdit,AppUserDTO.class),HttpStatus.OK);
+            return new ResponseEntity<>(modelMapper.map(appUserEdit,UserDetails.class),HttpStatus.OK);
         }
-        return  new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse(""),HttpStatus.BAD_REQUEST);
     }
 
     @PatchMapping("/change-avatar")
     public ResponseEntity<Image> changeAvatar(@RequestBody Image image){
-        User user = userService.getCurrentUser();
-        AppUser appUser = appUserService.findByUserName(user.getEmail());
+        AppUser appUser = appUserService.getCurrentAppUser();
         appUser.setAvatarImage(image.getImageLink());
         appUserService.save(appUser);
         return new ResponseEntity<>(image,HttpStatus.OK);
