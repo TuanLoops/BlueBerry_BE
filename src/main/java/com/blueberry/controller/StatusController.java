@@ -48,6 +48,7 @@ public class StatusController {
         AppUser appUser = appUserService.findByUserName(user.getEmail());
 
         Iterable<Status> statuses = statusService.findAllByAuthorId(appUser.getId(), Sort.by(Sort.Direction.DESC, "lastActivity"));
+        System.out.println(statuses);
 
         return new ResponseEntity<>(statuses, HttpStatus.OK);
     }
