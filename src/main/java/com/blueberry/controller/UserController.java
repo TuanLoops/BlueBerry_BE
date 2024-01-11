@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,21 +42,27 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
+        try {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtService.generateTokenLogin(authentication);
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         Optional<User> currentUser = userService.findByEmail(user.getEmail());
+
         if (currentUser.get().isActivated()) {
             return ResponseEntity.ok(new JwtResponse(jwt, currentUser.get().getId(), userDetails.getUsername(), userDetails.getAuthorities()));
         }
         return new ResponseEntity<>(new MessageResponse("Account has not been activated"), HttpStatus.FORBIDDEN);
+
+        } catch (AuthenticationException e) {
+            return new ResponseEntity<>(new MessageResponse("Email or password incorrect"), HttpStatus.FORBIDDEN);
+        }
     }
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout() {
         SecurityContextHolder.getContext().setAuthentication(null);
-        return new ResponseEntity<>("Đăng xuất thành công !!",HttpStatus.OK);
+        return new ResponseEntity<>("Logout successful !!",HttpStatus.OK);
     }
 
     @PostMapping("/register")

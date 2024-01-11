@@ -23,6 +23,7 @@ public class AppUserConverter implements Converter<AppUser, AppUserDTO> {
         destination.setPhoneNumber(source.getPhoneNumber());
         destination.setAddress(source.getAddress());
         destination.setHobbies(source.getHobbies());
+        destination.setFullName(source.getFirstName() +" "+ source.getLastName());
         UserDTO userDTO = new UserDTO(source.getUser().getId(),source.getUser().getEmail());
         destination.setUser(userDTO);
         return destination;
