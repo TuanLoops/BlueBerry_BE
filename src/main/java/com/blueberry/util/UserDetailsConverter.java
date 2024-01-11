@@ -20,6 +20,6 @@ public class UserDetailsConverter implements Converter<AppUser, UserDetails> {
         userDetails.setPhoneNumber(user.getPhoneNumber());
         userDetails.setHobbies(user.getHobbies());
         userDetails.setEmail(user.getUser().getEmail());
-        return null;
+        return userDetails;
     }
 }
