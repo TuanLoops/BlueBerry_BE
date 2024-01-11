@@ -1,6 +1,7 @@
 package com.blueberry.service.impl;
 
 
+import com.blueberry.model.app.PrivacyLevel;
 import com.blueberry.model.app.Status;
 import com.blueberry.repository.StatusRepository;
 import com.blueberry.service.StatusService;
@@ -8,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -15,6 +17,7 @@ import java.util.Optional;
 public class StatusServiceImpl implements StatusService {
 
     private StatusRepository statusRepository;
+
     @Override
     public Iterable<Status> findAll() {
         return statusRepository.findAll();
@@ -48,6 +51,11 @@ public class StatusServiceImpl implements StatusService {
     @Override
     public Iterable<Status> findAllByAuthorId(Long authorId, Sort sort) {
         return statusRepository.findAllByAuthorIdAndIsDeleted(authorId, false, sort);
+    }
+
+    @Override
+    public Iterable<Status> findAllByAuthorIdAndPrivaty(Long authorId, List<PrivacyLevel> privacyLevels, Sort sort) {
+        return statusRepository.findAllByAuthorIdAndIsDeletedAndPrivacyLevelIn(authorId, false, privacyLevels, sort);
     }
 
     @Override

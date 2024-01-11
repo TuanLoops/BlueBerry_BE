@@ -19,6 +19,7 @@ public class StatusDTOConverter implements Converter<Status, StatusDTO> {
         statusDTO.setComment(status.getCommentList().size());
         statusDTO.setLike(status.getLikeList().size());
         statusDTO.setImageList(status.getImageList());
+        statusDTO.setPrivacyLevel(status.getPrivacyLevel());
         statusDTO.setAuthor(getAppUserDTO(status.getAuthor()));
         return statusDTO;
     }

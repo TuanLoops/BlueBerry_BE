@@ -1,6 +1,7 @@
 package com.blueberry.model.dto;
 
 import com.blueberry.model.app.Image;
+import com.blueberry.model.app.PrivacyLevel;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -16,4 +17,5 @@ public class StatusDTO {
     private List<Image> imageList;
     private int comment;
     private int like;
+    private PrivacyLevel privacyLevel;
 }
