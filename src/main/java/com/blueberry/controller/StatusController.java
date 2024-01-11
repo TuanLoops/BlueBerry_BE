@@ -161,7 +161,9 @@ public class StatusController {
     @GetMapping()
     public ResponseEntity<List<StatusDTO>> findAllStatus(){
         AppUser appUser = appUserService.getCurrentAppUser();
-        List<Status> statuses = (List<Status>) statusService.findAllByAuthorId(appUser.getId(), SORT_BY_TIME_DESC);
+        List<Long> friends = new ArrayList<>();
+        friends.add(2L);
+        List<Status> statuses = (List<Status>) statusService.findAllByPrivacy(appUser.getId(),friends);
         return new ResponseEntity<>(modelMapperUtil.mapList(statuses, StatusDTO.class), HttpStatus.OK);
     }
 

@@ -62,4 +62,9 @@ public class StatusServiceImpl implements StatusService {
     public Iterable<Status> findAllByAuthorIdAndIsDeletedAndBodyContaining(Long authorId, boolean isDeleted, String query) {
         return statusRepository.findAllByAuthorIdAndIsDeletedAndBodyContaining(authorId, isDeleted, query);
     }
+
+    @Override
+    public Iterable<Status> findAllByPrivacy(Long userId, List<Long> friends) {
+        return statusRepository.findAllByPrivacy(userId, friends);
+    }
 }

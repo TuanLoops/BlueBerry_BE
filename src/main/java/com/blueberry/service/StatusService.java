@@ -14,4 +14,5 @@ public interface StatusService extends GenericService<Status>{
     Iterable<Status> findAllByAuthorId(Long authorId, Sort sort);
     Iterable<Status> findAllByAuthorIdAndPrivaty(Long authorId, List<PrivacyLevel> privacyLevels, Sort sort);
     Iterable<Status> findAllByAuthorIdAndIsDeletedAndBodyContaining(Long authorId, boolean isDeleted, String query);
+    Iterable<Status> findAllByPrivacy(Long userId,List<Long> friends);
 }
