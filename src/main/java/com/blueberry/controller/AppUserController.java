@@ -78,8 +78,7 @@ public class AppUserController {
     }
     @PatchMapping("/change-banner")
     public ResponseEntity<Image> changeBanner(@RequestBody Image image){
-        User user = userService.getCurrentUser();
-        AppUser appUser = appUserService.findByUserName(user.getEmail());
+        AppUser appUser = appUserService.getCurrentAppUser();
         appUser.setBannerImage(image.getImageLink());
         appUserService.save(appUser);
         return new ResponseEntity<>(image,HttpStatus.OK);
