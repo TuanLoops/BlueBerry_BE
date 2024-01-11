@@ -4,9 +4,11 @@ import com.blueberry.model.acc.User;
 import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.Image;
 import com.blueberry.model.app.Status;
+import com.blueberry.model.dto.StatusDTO;
 import com.blueberry.service.AppUserService;
 import com.blueberry.service.StatusService;
 import com.blueberry.service.UserService;
+import com.blueberry.util.ModelMapperUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -29,37 +31,38 @@ public class StatusController {
     private StatusService statusService;
     private UserService userService;
     private AppUserService appUserService;
+    private ModelMapperUtil modelMapperUtil;
 
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<Status>> findStatusById(@PathVariable Long id) {
+    public ResponseEntity<StatusDTO> findStatusById(@PathVariable Long id) {
         Optional<Status> status = statusService.findById(id);
         if (status.isPresent()) {
-            return new ResponseEntity<>(status, HttpStatus.OK);
+            return new ResponseEntity<>(modelMapperUtil.map(status,StatusDTO.class), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
     @GetMapping
-    public ResponseEntity<Iterable<Status>> getAllByCurrentUser() {
+    public ResponseEntity<List<StatusDTO>> getAllByCurrentUser() {
 
         User user = userService.getCurrentUser();
 
         AppUser appUser = appUserService.findByUserName(user.getEmail());
 
-        Iterable<Status> statuses = statusService.findAllByAuthorId(appUser.getId(), Sort.by(Sort.Direction.DESC, "lastActivity"));
+        List<Status> statuses = (List<Status>) statusService.findAllByAuthorId(appUser.getId(), Sort.by(Sort.Direction.DESC, "lastActivity"));
 
-        return new ResponseEntity<>(statuses, HttpStatus.OK);
+        return new ResponseEntity<>(modelMapperUtil.mapList(statuses,StatusDTO.class), HttpStatus.OK);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Iterable<Status>> getAllStatusByBodyContaining(@RequestParam("query") String query) {
+    public ResponseEntity<List<StatusDTO>> getAllStatusByBodyContaining(@RequestParam("query") String query) {
         User user = userService.getCurrentUser();
         AppUser appUser = appUserService.findByUserName(user.getEmail());
 
-        Iterable<Status> statuses = statusService.findAllByAuthorIdAndIsDeletedAndBodyContaining(appUser.getId(),false, query);
+       List<Status> statuses = (List<Status>) statusService.findAllByAuthorIdAndIsDeletedAndBodyContaining(appUser.getId(),false, query);
 
-        return new ResponseEntity<>(statuses, HttpStatus.OK);
+        return new ResponseEntity<>(modelMapperUtil.mapList(statuses,StatusDTO.class), HttpStatus.OK);
     }
 
 

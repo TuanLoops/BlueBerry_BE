@@ -20,7 +20,6 @@ public class AppUserDTOConverter implements Converter<AppUser, AppUserDTO> {
         destination.setBannerImage(source.getBannerImage());
         destination.setAvatarImage(source.getAvatarImage());
         destination.setFullName(source.getFirstName() +" "+ source.getLastName());
-
         return destination;
     }
 }
