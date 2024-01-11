@@ -100,7 +100,7 @@ public class RegisterServiceImpl implements RegisterService {
             AppUser appUser = appUserService.findByUserName(user.get().getEmail());
             String token = jwtService.generateEmailToken(email, EXPIRE_TIME);
             String fullName = appUser.getFirstName()+" "+appUser.getLastName();
-            emailService.send(email,"MXH Blueberry Xác nhận email", buildMail(fullName, "http://localhost:8080/users/api/auth/register/confirm?token=" + token));
+            emailService.send(email,"MXH Blueberry Xác nhận email", buildMail(fullName, "http://localhost:5173/confirm?token=" + token));
             return new ResponseEntity<>(new MessageResponse("Email has been sent"),HttpStatus.OK);
         }
         return new ResponseEntity<>(new MessageResponse("The email doesn't exist"),HttpStatus.BAD_REQUEST);
