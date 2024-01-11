@@ -20,7 +20,7 @@ public class StatusDTOConverter implements Converter<Status, StatusDTO> {
         statusDTO.setLike(status.getLikeList().size());
         statusDTO.setImageList(status.getImageList());
         statusDTO.setAuthor(getAppUserDTO(status.getAuthor()));
-        return null;
+        return statusDTO;
     }
     private AppUserDTO getAppUserDTO(AppUser appUser) {
         AppUserDTO appUserDTO = new AppUserDTO();
