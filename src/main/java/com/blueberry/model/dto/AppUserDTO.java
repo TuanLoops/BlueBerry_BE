@@ -9,11 +9,7 @@ public class AppUserDTO {
     private String firstName;
     private String lastName;
     private String fullName;
-    private LocalDate dob;
-    private int phoneNumber;
     private String avatarImage;
     private String bannerImage;
-    private String hobbies;
-    private String address;
-    private UserDTO user;
+    private boolean isOnline;
 }

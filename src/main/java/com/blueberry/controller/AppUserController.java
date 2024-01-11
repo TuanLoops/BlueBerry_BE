@@ -4,6 +4,7 @@ import com.blueberry.model.acc.User;
 import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.Image;
 import com.blueberry.model.dto.AppUserDTO;
+import com.blueberry.model.dto.UserDetails;
 import com.blueberry.service.AppUserService;
 import com.blueberry.service.UserService;
 import com.blueberry.util.ModelMapperUtil;
@@ -32,11 +33,11 @@ public class AppUserController {
         return new ResponseEntity<>(modelMapper.mapList(appUsers,AppUserDTO.class),HttpStatus.OK);
     }
     @GetMapping("/{id}")
-    public ResponseEntity<AppUserDTO> getAppUser(@PathVariable Long id) {
+    public ResponseEntity<UserDetails> getAppUser(@PathVariable Long id) {
         Optional<AppUser> appUser = appUserService.findById(id);
         if (appUser.isPresent()) {
-            AppUserDTO appUserDTO= modelMapper.map(appUser.get(),AppUserDTO.class);
-            return new ResponseEntity<>(appUserDTO,HttpStatus.OK);
+            UserDetails userDetails= modelMapper.map(appUser.get(),UserDetails.class);
+            return new ResponseEntity<>(userDetails,HttpStatus.OK);
         }
         return  new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }

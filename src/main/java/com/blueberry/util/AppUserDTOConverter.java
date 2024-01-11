@@ -8,7 +8,7 @@ import org.modelmapper.spi.MappingContext;
 
 
 
-public class AppUserConverter implements Converter<AppUser, AppUserDTO> {
+public class AppUserDTOConverter implements Converter<AppUser, AppUserDTO> {
 
     @Override
     public AppUserDTO convert(MappingContext<AppUser, AppUserDTO> mappingContext) {
@@ -17,15 +17,10 @@ public class AppUserConverter implements Converter<AppUser, AppUserDTO> {
         destination.setId(source.getId());
         destination.setFirstName(source.getFirstName());
         destination.setLastName(source.getLastName());
-        destination.setDob(source.getDob());
         destination.setBannerImage(source.getBannerImage());
         destination.setAvatarImage(source.getAvatarImage());
-        destination.setPhoneNumber(source.getPhoneNumber());
-        destination.setAddress(source.getAddress());
-        destination.setHobbies(source.getHobbies());
         destination.setFullName(source.getFirstName() +" "+ source.getLastName());
-        UserDTO userDTO = new UserDTO(source.getUser().getId(),source.getUser().getEmail());
-        destination.setUser(userDTO);
+
         return destination;
     }
 }
