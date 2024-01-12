@@ -53,9 +53,9 @@ public class RegisterServiceImpl implements RegisterService {
             userApp.setAvatarImage("https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png");
             appUserService.save(userApp);
             emailService.send(userRequest.getEmail(),"MXH Blueberry Xác nhận email", buildMail(fullName, "http://localhost:5173/confirm?token=" + token));
-            return new ResponseEntity<>(new MessageResponse("Registered successfully"), HttpStatus.CREATED);
+            return new ResponseEntity<>(new MessageResponse("Registered successfully !!"), HttpStatus.CREATED);
         } catch (Exception e) {
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()+" !!"), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -83,14 +83,14 @@ public class RegisterServiceImpl implements RegisterService {
             Optional<User> user = userService.findByEmail(email);
             if (user.isPresent()) {
                 if(user.get().isActivated()){
-                    return new ResponseEntity<>(new MessageResponse("Account has been activated"),HttpStatus.CONFLICT);
+                    return new ResponseEntity<>(new MessageResponse("Account has been activated !!"),HttpStatus.CONFLICT);
                 }
                 user.get().setActivated(true);
                 userService.save(user.get());
-                return new ResponseEntity<>(new MessageResponse("Account has been activated successfully"),HttpStatus.OK);
+                return new ResponseEntity<>(new MessageResponse("Account has been activated successfully !!"),HttpStatus.OK);
             }
         }
-        return new ResponseEntity<>(new MessageResponse("Account activation failed"),HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Account activation failed !!"),HttpStatus.BAD_REQUEST);
     }
 
     @Override
@@ -101,9 +101,9 @@ public class RegisterServiceImpl implements RegisterService {
             String token = jwtService.generateEmailToken(email, EXPIRE_TIME);
             String fullName = appUser.getFirstName()+" "+appUser.getLastName();
             emailService.send(email,"MXH Blueberry Xác nhận email", buildMail(fullName, "http://localhost:5173/confirm?token=" + token));
-            return new ResponseEntity<>(new MessageResponse("Email has been sent"),HttpStatus.OK);
+            return new ResponseEntity<>(new MessageResponse("Email has been sent !!"),HttpStatus.OK);
         }
-        return new ResponseEntity<>(new MessageResponse("The email doesn't exist"),HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("The email doesn't exist !!"),HttpStatus.BAD_REQUEST);
     }
 
 }

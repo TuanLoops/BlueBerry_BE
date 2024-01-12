@@ -18,6 +18,7 @@ public class CommentDTOConverter implements Converter<Comment, CommentDTO> {
         commentDTO.setStatusId(comment.getStatus().getId());
         commentDTO.setAuthor(appUserDTO);
         commentDTO.setCreatedAt(comment.getCreatedAt());
+        commentDTO.setImage(comment.getImage());
         return null;
     }
 }

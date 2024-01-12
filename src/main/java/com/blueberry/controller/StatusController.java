@@ -5,12 +5,14 @@ import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.Image;
 import com.blueberry.model.app.PrivacyLevel;
 import com.blueberry.model.app.Status;
+import com.blueberry.model.dto.MessageResponse;
 import com.blueberry.model.dto.StatusDTO;
 import com.blueberry.model.request.StatusRequest;
 import com.blueberry.service.AppUserService;
 import com.blueberry.service.StatusService;
 import com.blueberry.service.UserService;
 import com.blueberry.util.ModelMapperUtil;
+import com.blueberry.util.StringTrimmer;
 import jakarta.persistence.RollbackException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -66,14 +68,14 @@ public class StatusController {
 
 
     @PostMapping
-    public ResponseEntity<StatusDTO> create(@RequestBody StatusRequest statusRequest) {
+    public ResponseEntity<?> create(@RequestBody StatusRequest statusRequest) {
         AppUser appUser = appUserService.getCurrentAppUser();
         Status status = new Status();
         status.setAuthor(appUser);
         status.setCreatedAt(LocalDateTime.now());
         status.setLastActivity(LocalDateTime.now());
         status.setBody(statusRequest.getBody());
-        status.setBody(status.getBody().trim());
+        status.setBody(StringTrimmer.trim(status.getBody()));
         status.setImageList(statusRequest.getImageList());
         status.setCommentList(new ArrayList<>());
         status.setLikeList(new ArrayList<>());
@@ -86,18 +88,18 @@ public class StatusController {
             status = statusService.save(status);
             return new ResponseEntity<>(modelMapperUtil.map(status, StatusDTO.class), HttpStatus.OK);
         } catch (RollbackException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new MessageResponse("Post failure status !!"),HttpStatus.BAD_REQUEST);
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<StatusDTO> edit(@PathVariable Long id, @RequestBody Status status) {
+    public ResponseEntity<?> edit(@PathVariable Long id, @RequestBody StatusRequest status) {
         Optional<Status> optionalStatus = statusService.findById(id);
         if (optionalStatus.isPresent()) {
             User user = userService.getCurrentUser();
             String currentUsername = user.getEmail();
             if (currentUsername.equals(optionalStatus.get().getAuthor().getUser().getEmail())) {
-                optionalStatus.get().setBody(status.getBody().trim());
+                optionalStatus.get().setBody(StringTrimmer.trim(status.getBody()));
                 optionalStatus.get().setUpdatedAt(LocalDateTime.now());
                 List<Image> newImageList = new ArrayList<>();
                 if (status.getImageList() != null) {
@@ -107,15 +109,15 @@ public class StatusController {
                 Status savedStatus = statusService.save(optionalStatus.get());
                 return new ResponseEntity<>(modelMapperUtil.map(savedStatus, StatusDTO.class), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+                return new ResponseEntity<>(new MessageResponse("Access denied !!"),HttpStatus.FORBIDDEN);
             }
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new MessageResponse("Not found !!"),HttpStatus.NOT_FOUND);
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
         Optional<Status> status = statusService.findById(id);
         if (status.isPresent()) {
             User user = userService.getCurrentUser();
@@ -123,17 +125,17 @@ public class StatusController {
             if (currentUsername.equals(status.get().getAuthor().getUser().getEmail())) {
                 status.get().setDeleted(true);
                 statusService.save(status.get());
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                return new ResponseEntity<>(new MessageResponse("Deleted successful !!"),HttpStatus.NO_CONTENT);
             } else {
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+                return new ResponseEntity<>(new MessageResponse("Access denied !!"),HttpStatus.FORBIDDEN);
             }
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new MessageResponse("Delete failed !!"),HttpStatus.NOT_FOUND);
         }
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<StatusDTO> updatePrivacy(@PathVariable Long id, @RequestBody PrivacyLevel newPrivacy) {
+    public ResponseEntity<?> updatePrivacy(@PathVariable Long id, @RequestBody PrivacyLevel newPrivacy) {
         Optional<Status> optionalStatus = statusService.findById(id);
         if (optionalStatus.isPresent()) {
             AppUser currentUser = appUserService.getCurrentAppUser();
@@ -142,9 +144,9 @@ public class StatusController {
                 statusService.save(optionalStatus.get());
                 return new ResponseEntity<>(HttpStatus.OK);
             }
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new MessageResponse("Access denied !!"),HttpStatus.FORBIDDEN);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new MessageResponse("Not Found !!"),HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/users/{id}")
