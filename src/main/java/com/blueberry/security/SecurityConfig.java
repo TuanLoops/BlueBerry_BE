@@ -6,6 +6,8 @@ import com.blueberry.security.jwt.JwtAuthenticationFilter;
 import com.blueberry.security.jwt.RestAuthenticationEntryPoint;
 import com.blueberry.service.UserService;
 import com.blueberry.service.impl.UserServiceImpl;
+import com.blueberry.service.token.TokenStore;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,6 +31,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    @Autowired
+    private TokenStore tokenStore;
     @Bean
     public UserService userService() {
     return new UserServiceImpl();
@@ -36,7 +40,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter();
+        return new JwtAuthenticationFilter(tokenStore);
     }
 
     @Bean(BeanIds.AUTHENTICATION_MANAGER)
