@@ -8,6 +8,8 @@ import com.blueberry.service.RegisterService;
 import com.blueberry.service.RoleService;
 import com.blueberry.service.UserService;
 import com.blueberry.service.impl.JwtService;
+import com.blueberry.service.token.TokenStore;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 
 import org.slf4j.Logger;
@@ -39,20 +41,21 @@ public class UserController {
     private RoleService roleService;
     private PasswordEncoder passwordEncoder;
     private RegisterService registerService;
+    private TokenStore tokenStore;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         try {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtService.generateTokenLogin(authentication);
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        Optional<User> currentUser = userService.findByEmail(user.getEmail());
-
-        if (currentUser.get().isActivated()) {
-            return ResponseEntity.ok(new JwtResponse(jwt, currentUser.get().getId(), userDetails.getUsername(), userDetails.getAuthorities()));
-        }
-        return new ResponseEntity<>(new MessageResponse("Account has not been activated"), HttpStatus.FORBIDDEN);
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtService.generateTokenLogin(authentication);
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            Optional<User> currentUser = userService.findByEmail(user.getEmail());
+            if (currentUser.get().isActivated()) {
+                tokenStore.storeToken(jwt);
+                return ResponseEntity.ok(new JwtResponse(jwt, currentUser.get().getId(), userDetails.getUsername(), userDetails.getAuthorities()));
+            }
+            return new ResponseEntity<>(new MessageResponse("Account has not been activated"), HttpStatus.FORBIDDEN);
 
         } catch (AuthenticationException e) {
             return new ResponseEntity<>(new MessageResponse("Email or password incorrect"), HttpStatus.FORBIDDEN);
@@ -60,7 +63,13 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout() {
+    public ResponseEntity<String> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer "))
+        {
+           authHeader= authHeader.replace("Bearer ", "");
+        }
+        tokenStore.removeToken(authHeader);
         SecurityContextHolder.getContext().setAuthentication(null);
         return new ResponseEntity<>("Logout successful !!",HttpStatus.OK);
     }
