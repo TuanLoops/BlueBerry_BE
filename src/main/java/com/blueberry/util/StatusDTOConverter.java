@@ -20,17 +20,7 @@ public class StatusDTOConverter implements Converter<Status, StatusDTO> {
         statusDTO.setLike(status.getLikeList().size());
         statusDTO.setImageList(status.getImageList());
         statusDTO.setPrivacyLevel(status.getPrivacyLevel());
-        statusDTO.setAuthor(getAppUserDTO(status.getAuthor()));
+        statusDTO.setAuthor(AppUserDTOConverter.converter(status.getAuthor()));
         return statusDTO;
-    }
-    private AppUserDTO getAppUserDTO(AppUser appUser) {
-        AppUserDTO appUserDTO = new AppUserDTO();
-        appUserDTO.setFirstName(appUser.getFirstName());
-        appUserDTO.setId(appUser.getId());
-        appUserDTO.setLastName(appUser.getLastName());
-        appUserDTO.setBannerImage(appUser.getBannerImage());
-        appUserDTO.setAvatarImage(appUser.getAvatarImage());
-        appUserDTO.setFullName(appUser.getFirstName() +" "+ appUser.getLastName());
-        return appUserDTO;
     }
 }

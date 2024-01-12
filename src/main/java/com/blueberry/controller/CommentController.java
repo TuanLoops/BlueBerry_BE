@@ -1,7 +1,9 @@
 package com.blueberry.controller;
 
+import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.Comment;
 import com.blueberry.model.app.Status;
+import com.blueberry.model.dto.CommentDTO;
 import com.blueberry.service.AppUserService;
 import com.blueberry.service.CommentService;
 import com.blueberry.service.StatusService;
@@ -12,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -28,7 +31,7 @@ public class CommentController {
     private ModelMapperUtil modelMapperUtil;
 
     @GetMapping("/{statusId}/comments")
-    public ResponseEntity<List<Comment>> findAllByStatusId(@PathVariable Long statusId) {
+    public ResponseEntity<List<CommentDTO>> findAllByStatusId(@PathVariable Long statusId) {
         Status status = statusService.findById(statusId).orElse(null);
 
         if (status == null) {
@@ -37,30 +40,30 @@ public class CommentController {
 
         List<Comment> commentList = status.getCommentList();
 
-        return new ResponseEntity<>(commentList, HttpStatus.OK);
+        return new ResponseEntity<>(modelMapperUtil.mapList(commentList,CommentDTO.class), HttpStatus.OK);
     }
 
     @PostMapping("/{statusId}/comments")
-    public ResponseEntity<Comment> addCommentByStatusId(@PathVariable Long statusId, @RequestBody Comment newComment) {
+    public ResponseEntity<CommentDTO> addCommentByStatusId(@PathVariable Long statusId, @RequestBody Comment newComment) {
         Status status = statusService.findById(statusId).orElse(null);
-
+        AppUser currentAppUser = appUserService.getCurrentAppUser();
         if (status == null) {
             return ResponseEntity.notFound().build();
         }
-
+        newComment.setAuthor(currentAppUser);
         newComment.setStatus(status);
-
+        newComment.setCreatedAt(LocalDateTime.now());
         Comment savedComment = commentService.save(newComment);
 
         status.getCommentList().add(savedComment);
 
         statusService.save(status);
 
-        return new ResponseEntity<>(savedComment, HttpStatus.CREATED);
+        return new ResponseEntity<>(modelMapperUtil.map(savedComment,CommentDTO.class), HttpStatus.CREATED);
     }
 
     @PutMapping("/comments/{commentId}")
-    public ResponseEntity<Comment> editCommentById(@PathVariable Long commentId, @RequestBody Comment updatedComment) {
+    public ResponseEntity<CommentDTO> editCommentById(@PathVariable Long commentId, @RequestBody Comment updatedComment) {
         Comment currentComment = commentService.findById(commentId).orElse(null);
 
         if (currentComment == null) {
@@ -73,7 +76,7 @@ public class CommentController {
 
         Comment savedComment = commentService.save(currentComment);
 
-        return new ResponseEntity<>(savedComment, HttpStatus.OK);
+        return new ResponseEntity<>(modelMapperUtil.map(savedComment,CommentDTO.class), HttpStatus.OK);
     }
 
     @DeleteMapping("/comments/{commentId}")
