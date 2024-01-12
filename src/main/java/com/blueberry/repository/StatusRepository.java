@@ -16,12 +16,15 @@ public interface StatusRepository extends JpaRepository<Status, Long> {
     Iterable<Status> findAllByAuthorId(Long id);
 
     Iterable<Status> findAllByAuthorIdAndIsDeleted(Long authorId, boolean isDeleted);
+
     Iterable<Status> findAllByAuthorIdAndIsDeleted(Long authorId, boolean isDeleted, Sort sort);
+
     Iterable<Status> findAllByAuthorIdAndIsDeletedAndPrivacyLevelIn(Long authorId, boolean isDeleted, List<PrivacyLevel> privacyLevels, Sort sort);
+
     Iterable<Status> findAllByAuthorIdAndIsDeletedAndBodyContaining(Long authorId, boolean isDeleted, String query);
 
     @Query("SELECT s FROM Status s " +
-            "    WHERE (s.author.id = :id OR (s.author.id IN :friends AND s.privacyLevel = 'FRIENDS')" +
+            "    WHERE ((s.author.id = :id AND s.privacyLevel != 'PRIVATE' )OR (s.author.id IN :friends AND s.privacyLevel = 'FRIENDS')" +
             "       OR s.privacyLevel='PUBLIC' ) AND s.isDeleted = false ORDER BY s.lastActivity DESC")
     Iterable<Status> findAllByPrivacy(@Param("id") Long userId, @Param("friends") List<Long> friends);
 }

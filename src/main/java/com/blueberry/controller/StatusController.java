@@ -149,7 +149,11 @@ public class StatusController {
 
     @GetMapping("/users/{id}")
     public ResponseEntity<List<StatusDTO>> getStatusByUserId(@PathVariable Long id) {
+        AppUser currentUser = appUserService.getCurrentAppUser();
         List<PrivacyLevel> privacyLevels = new ArrayList<>();
+        if(Objects.equals(currentUser.getId(), id)) {
+            privacyLevels.add(PrivacyLevel.PRIVATE);
+        }
         privacyLevels.add(PrivacyLevel.PUBLIC);
         privacyLevels.add(PrivacyLevel.FRIENDS);
         List<Status> statuses = (List<Status>) statusService.findAllByAuthorIdAndPrivaty(id, privacyLevels, SORT_BY_TIME_DESC);
