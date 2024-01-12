@@ -35,12 +35,12 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Iterable<Comment> findAllByStatusIdAndAuthorId(Long statusId, Long authorId) {
-        return commentRepository.findAllByStatusIdAndAuthorId(statusId, authorId);
+    public void deleteByStatusIdAndAuthorId(Long statusId, Long authorId) {
+        commentRepository.deleteByStatusIdAndAuthorId(statusId, authorId);
     }
 
     @Override
-    public void deleteByStatusIdAndAuthorId(Long statusId, Long authorId) {
-        commentRepository.deleteByStatusIdAndAuthorId(statusId, authorId);
+    public Iterable<Comment> findAllByStatusIdAndIsDeleted(Long statusId, Boolean deleted) {
+        return commentRepository.findAllByStatusIdAndIsDeleted(statusId,deleted);
     }
 }
