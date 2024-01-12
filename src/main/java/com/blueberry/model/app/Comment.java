@@ -32,6 +32,10 @@ public class Comment {
 
     private LocalDateTime updatedAt;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "image_id")
+    private Image image;
+
     private boolean isUpdated;
 
     @Column(nullable = false)

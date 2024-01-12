@@ -1,7 +1,6 @@
 package com.blueberry.model.app;
 
 
-import com.blueberry.model.acc.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -48,5 +47,9 @@ public class Status {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "status_id")
     private List<Like> likeList;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false,length = 20)
+    private PrivacyLevel privacyLevel;
 
 }
