@@ -28,10 +28,8 @@ public class Comment {
     @Column(nullable = false)
     private String body;
 
-    @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     private boolean isUpdated;

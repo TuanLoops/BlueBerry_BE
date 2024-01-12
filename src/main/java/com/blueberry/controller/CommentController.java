@@ -1,5 +1,6 @@
 package com.blueberry.controller;
 
+import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.Comment;
 import com.blueberry.model.app.Status;
 import com.blueberry.service.AppUserService;
@@ -40,15 +41,18 @@ public class CommentController {
         return new ResponseEntity<>(commentList, HttpStatus.OK);
     }
 
-    @PostMapping("/{statusId}/comments")
+    @PostMapping("/{statusId}/comment")
     public ResponseEntity<Comment> addCommentByStatusId(@PathVariable Long statusId, @RequestBody Comment newComment) {
         Status status = statusService.findById(statusId).orElse(null);
+        AppUser currentAppUserComment = appUserService.getCurrentAppUser();
 
         if (status == null) {
             return ResponseEntity.notFound().build();
         }
 
+        newComment.setAuthor(currentAppUserComment);
         newComment.setStatus(status);
+        newComment.setCreatedAt(LocalDateTime.now());
 
         Comment savedComment = commentService.save(newComment);
 
