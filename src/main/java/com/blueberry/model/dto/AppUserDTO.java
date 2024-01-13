@@ -8,11 +8,8 @@ public class AppUserDTO {
     private Long id;
     private String firstName;
     private String lastName;
-    private LocalDate dob;
-    private int phoneNumber;
+    private String fullName;
     private String avatarImage;
     private String bannerImage;
-    private String hobbies;
-    private String address;
-    private UserDTO user;
+    private boolean isOnline;
 }

@@ -41,4 +41,12 @@ public class Status {
     @JoinColumn(name = "status_id")
     private List<Image> imageList;
 
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "status_id")
+    private List<Comment> commentList;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "status_id")
+    private List<Like> likeList;
+
 }
