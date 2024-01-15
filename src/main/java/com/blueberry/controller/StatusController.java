@@ -125,7 +125,7 @@ public class StatusController {
             if (currentUsername.equals(status.get().getAuthor().getUser().getEmail())) {
                 status.get().setDeleted(true);
                 statusService.save(status.get());
-                return new ResponseEntity<>(new MessageResponse("Deleted successful !!"),HttpStatus.NO_CONTENT);
+                return new ResponseEntity<>(id,HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(new MessageResponse("Access denied !!"),HttpStatus.FORBIDDEN);
             }
@@ -134,15 +134,15 @@ public class StatusController {
         }
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<?> updatePrivacy(@PathVariable Long id, @RequestBody PrivacyLevel newPrivacy) {
+    @PutMapping("/{id}/change-privacy")
+    public ResponseEntity<?> updatePrivacy(@PathVariable Long id, @RequestBody StatusRequest statusRequest) {
         Optional<Status> optionalStatus = statusService.findById(id);
         if (optionalStatus.isPresent()) {
             AppUser currentUser = appUserService.getCurrentAppUser();
             if (Objects.equals(currentUser.getId(), optionalStatus.get().getAuthor().getId())) {
-                optionalStatus.get().setPrivacyLevel(newPrivacy);
+                optionalStatus.get().setPrivacyLevel(statusRequest.getPrivacyLevel());
                 statusService.save(optionalStatus.get());
-                return new ResponseEntity<>(HttpStatus.OK);
+                return new ResponseEntity<>(new MessageResponse("Change Successfully !!"),HttpStatus.OK);
             }
             return new ResponseEntity<>(new MessageResponse("Access denied !!"),HttpStatus.FORBIDDEN);
         }
