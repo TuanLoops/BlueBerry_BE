@@ -4,6 +4,7 @@ import com.blueberry.model.app.Comment;
 import com.blueberry.repository.CommentRepository;
 import com.blueberry.service.CommentService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -13,6 +14,7 @@ import java.util.Optional;
 public class CommentServiceImpl implements CommentService {
 
     private CommentRepository commentRepository;
+    private final Sort SORT_BY_TIME_DESC = Sort.by(Sort.Direction.DESC, "createdAt");
 
     @Override
     public Iterable<Comment> findAll() {
@@ -41,6 +43,6 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Iterable<Comment> findAllByStatusIdAndIsDeleted(Long statusId, Boolean deleted) {
-        return commentRepository.findAllByStatusIdAndIsDeleted(statusId,deleted);
+        return commentRepository.findAllByStatusIdAndIsDeleted(statusId,deleted,SORT_BY_TIME_DESC);
     }
 }

@@ -86,11 +86,11 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentId}")
-    public ResponseEntity<MessageResponse> deleteCommentById(@PathVariable Long commentId) {
+    public ResponseEntity<?> deleteCommentById(@PathVariable Long commentId) {
         Comment currentComment = commentService.findById(commentId).orElse(null);
 
         if (currentComment == null) {
-            return ResponseEntity.notFound().build();
+            return new ResponseEntity<>(new MessageResponse("Deleted successful !!"),HttpStatus.NOT_FOUND);
         }
         AppUser currentAppUser = appUserService.getCurrentAppUser();
         if (Objects.equals(currentAppUser.getId(), currentComment.getAuthor().getId())) {
@@ -100,7 +100,7 @@ public class CommentController {
 
             commentService.delete(commentId);
 
-            return new ResponseEntity<>(new MessageResponse("Deleted successful !!"), HttpStatus.OK);
+            return new ResponseEntity<>(commentId, HttpStatus.OK);
         }
         return new ResponseEntity<>(new MessageResponse("Access denied !!"), HttpStatus.FORBIDDEN);
     }
