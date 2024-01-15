@@ -1,4 +1,4 @@
-package com.blueberry.util;
+package com.blueberry.model.dto.converter;
 
 import com.blueberry.model.app.AppUser;
 import com.blueberry.model.dto.AppUserDTO;

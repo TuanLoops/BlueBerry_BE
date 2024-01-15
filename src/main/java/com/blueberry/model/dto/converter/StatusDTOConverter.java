@@ -1,11 +1,10 @@
-package com.blueberry.util;
+package com.blueberry.model.dto.converter;
 
-import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.Comment;
 import com.blueberry.model.app.Status;
-import com.blueberry.model.dto.AppUserDTO;
 import com.blueberry.model.dto.StatusDTO;
 import org.modelmapper.Converter;
+import org.modelmapper.ModelMapper;
 import org.modelmapper.spi.MappingContext;
 
 import java.util.List;
@@ -13,16 +12,11 @@ import java.util.List;
 public class StatusDTOConverter implements Converter<Status, StatusDTO> {
     @Override
     public StatusDTO convert(MappingContext<Status, StatusDTO> mappingContext) {
+        ModelMapper mapper = new ModelMapper();
         Status status = mappingContext.getSource();
-        StatusDTO statusDTO = new StatusDTO();
-        statusDTO.setId(status.getId());
-        statusDTO.setBody(status.getBody());
-        statusDTO.setUpdated(status.isUpdated());
-        statusDTO.setCreatedAt(status.getCreatedAt());
-        statusDTO.setComment(countComments(status.getCommentList()));
-        statusDTO.setLike(status.getLikeList().size());
-        statusDTO.setImageList(status.getImageList());
-        statusDTO.setPrivacyLevel(status.getPrivacyLevel());
+        StatusDTO statusDTO = mapper.map(status,StatusDTO.class);
+        statusDTO.setCountComment(countComments(status.getCommentList()));
+        statusDTO.setCountLike(status.getLikeList().size());
         statusDTO.setAuthor(AppUserDTOConverter.converter(status.getAuthor()));
         return statusDTO;
     }
