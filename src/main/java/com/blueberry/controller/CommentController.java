@@ -54,12 +54,13 @@ public class CommentController {
             return ResponseEntity.notFound().build();
         }
         newComment.setAuthor(currentAppUser);
-        newComment.setStatus(status);
+        newComment.setStatusId(status.getId());
         newComment.setBody(StringTrimmer.trim(newComment.getBody()));
         newComment.setCreatedAt(LocalDateTime.now());
         Comment savedComment = commentService.save(newComment);
 
         status.getCommentList().add(savedComment);
+        status.setLastActivity(LocalDateTime.now());
 
         statusService.save(status);
 
@@ -86,21 +87,17 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentId}")
-    public ResponseEntity<MessageResponse> deleteCommentById(@PathVariable Long commentId) {
+    public ResponseEntity<?> deleteCommentById(@PathVariable Long commentId) {
         Comment currentComment = commentService.findById(commentId).orElse(null);
 
         if (currentComment == null) {
-            return ResponseEntity.notFound().build();
+            return new ResponseEntity<>(new MessageResponse("Deleted successful !!"),HttpStatus.NOT_FOUND);
         }
         AppUser currentAppUser = appUserService.getCurrentAppUser();
         if (Objects.equals(currentAppUser.getId(), currentComment.getAuthor().getId())) {
-            Status status = currentComment.getStatus();
-            status.getCommentList().remove(currentComment);
-            statusService.save(status);
-
             commentService.delete(commentId);
 
-            return new ResponseEntity<>(new MessageResponse("Deleted successful !!"), HttpStatus.OK);
+            return new ResponseEntity<>(commentId, HttpStatus.OK);
         }
         return new ResponseEntity<>(new MessageResponse("Access denied !!"), HttpStatus.FORBIDDEN);
     }

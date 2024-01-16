@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
@@ -12,17 +13,17 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "likes")
-public class Like {
+@IdClass(Like.class)
+public class Like implements Serializable {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "author_id", nullable = false)
+    private Long authorId;
 
-    @ManyToOne
-    @JoinColumn(name = "status_id", nullable = false)
-    private Status status;
+    @Id
+    @Column(name = "status_id",nullable = false)
+    private Long statusId;
 
-    @ManyToOne
-    @JoinColumn(name = "author_id", nullable = false)
-    private AppUser author;
+
 
 }

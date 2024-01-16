@@ -15,7 +15,8 @@ public class StatusDTO {
     private boolean isUpdated;
     private AppUserDTO author;
     private List<Image> imageList;
-    private int comment;
-    private int like;
+    private int countComments;
+    private int countLikes;
     private PrivacyLevel privacyLevel;
+    private boolean liked;
 }
