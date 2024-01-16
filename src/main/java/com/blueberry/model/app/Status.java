@@ -1,6 +1,9 @@
 package com.blueberry.model.app;
 
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -52,4 +55,6 @@ public class Status {
     @Column(nullable = false,length = 20)
     private PrivacyLevel privacyLevel;
 
+    @Transient
+    private boolean liked;
 }

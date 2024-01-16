@@ -1,5 +1,6 @@
 package com.blueberry.model.app;
 
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,9 +18,8 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "status_id", nullable = false)
-    private Status status;
+    @Column(name = "status_id",nullable = false)
+    private Long statusId;
 
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)

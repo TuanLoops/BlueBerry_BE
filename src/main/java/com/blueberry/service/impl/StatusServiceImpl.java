@@ -1,15 +1,19 @@
 package com.blueberry.service.impl;
 
 
+import com.blueberry.model.app.AppUser;
+import com.blueberry.model.app.Like;
 import com.blueberry.model.app.PrivacyLevel;
 import com.blueberry.model.app.Status;
 import com.blueberry.repository.StatusRepository;
+import com.blueberry.service.AppUserService;
 import com.blueberry.service.StatusService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -17,6 +21,7 @@ import java.util.Optional;
 public class StatusServiceImpl implements StatusService {
 
     private StatusRepository statusRepository;
+    private AppUserService appUserService;
 
     @Override
     public Iterable<Status> findAll() {
@@ -50,7 +55,12 @@ public class StatusServiceImpl implements StatusService {
 
     @Override
     public Iterable<Status> findAllByAuthorId(Long authorId, Sort sort) {
-        return statusRepository.findAllByAuthorIdAndIsDeleted(authorId, false, sort);
+        AppUser appUser = appUserService.getCurrentAppUser();
+        Iterable<Status> statuses = statusRepository.findAllByAuthorIdAndIsDeleted(authorId, false, sort);
+        for (Status status : statuses) {
+            status.setLiked(likedByCurrentUser(status.getLikeList(),appUser.getId()));
+        }
+        return statuses;
     }
 
     @Override
@@ -65,6 +75,19 @@ public class StatusServiceImpl implements StatusService {
 
     @Override
     public Iterable<Status> findAllByPrivacy(Long userId, List<Long> friends) {
-        return statusRepository.findAllByPrivacy(userId, friends);
+        AppUser appUser = appUserService.getCurrentAppUser();
+        Iterable<Status> statuses = statusRepository.findAllByPrivacy(userId, friends);
+        for (Status status : statuses) {
+            status.setLiked(likedByCurrentUser(status.getLikeList(),appUser.getId()));
+        }
+        return statuses;
+    }
+    private boolean likedByCurrentUser(List<Like> likes,Long currentUserId){
+        for (Like like: likes) {
+            if (Objects.equals(like.getAuthorId(), currentUserId)){
+                return true;
+            }
+        }
+        return false;
     }
 }
