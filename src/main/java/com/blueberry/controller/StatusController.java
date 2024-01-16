@@ -1,14 +1,12 @@
 package com.blueberry.controller;
 
 import com.blueberry.model.acc.User;
-import com.blueberry.model.app.AppUser;
-import com.blueberry.model.app.Image;
-import com.blueberry.model.app.PrivacyLevel;
-import com.blueberry.model.app.Status;
+import com.blueberry.model.app.*;
 import com.blueberry.model.dto.MessageResponse;
 import com.blueberry.model.dto.StatusDTO;
 import com.blueberry.model.request.StatusRequest;
 import com.blueberry.service.AppUserService;
+import com.blueberry.service.LikeService;
 import com.blueberry.service.StatusService;
 import com.blueberry.service.UserService;
 import com.blueberry.util.ModelMapperUtil;
@@ -18,8 +16,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -38,6 +34,7 @@ public class StatusController {
     private UserService userService;
     private AppUserService appUserService;
     private ModelMapperUtil modelMapperUtil;
+    private LikeService likeService;
     private final Sort SORT_BY_TIME_DESC = Sort.by(Sort.Direction.DESC, "lastActivity");
 
     @GetMapping("/{id}")
@@ -173,9 +170,20 @@ public class StatusController {
         return new ResponseEntity<>(modelMapperUtil.mapList(statuses, StatusDTO.class), HttpStatus.OK);
     }
     @PostMapping("/{id}/like")
-    public ResponseEntity<?> likeStatus(@RequestParam Long id){
-
-        return new ResponseEntity<>(HttpStatus.OK);
-
+    public ResponseEntity<?> likeStatus(@PathVariable Long id){
+        AppUser appUser = appUserService.getCurrentAppUser();
+        Optional<Like> liked=  likeService.findByStatusIdAndAuthorId(id,appUser.getId());
+        try {
+            if(liked.isPresent()){
+                likeService.deleteLike(liked.get());
+                return new ResponseEntity<>( -1,HttpStatus.OK);
+            }else{
+                Like newLike= new Like(appUser.getId(),id);
+                likeService.save(newLike);
+                return new ResponseEntity<>(1,HttpStatus.OK);
+            }
+        }catch (Exception e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 }
