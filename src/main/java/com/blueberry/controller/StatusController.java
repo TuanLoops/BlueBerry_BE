@@ -172,5 +172,10 @@ public class StatusController {
         List<Status> statuses = (List<Status>) statusService.findAllByPrivacy(appUser.getId(),friends);
         return new ResponseEntity<>(modelMapperUtil.mapList(statuses, StatusDTO.class), HttpStatus.OK);
     }
+    @PostMapping("/{id}/like")
+    public ResponseEntity<?> likeStatus(@RequestParam Long id){
 
+        return new ResponseEntity<>(HttpStatus.OK);
+
+    }
 }

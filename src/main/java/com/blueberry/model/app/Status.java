@@ -55,4 +55,6 @@ public class Status {
     @Column(nullable = false,length = 20)
     private PrivacyLevel privacyLevel;
 
+    @Transient
+    private boolean liked;
 }
