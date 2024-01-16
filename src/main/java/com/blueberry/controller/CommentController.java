@@ -75,6 +75,7 @@ public class CommentController {
         AppUser currentAppUser = appUserService.getCurrentAppUser();
         if(Objects.equals(currentAppUser.getId(), currentComment.getAuthor().getId())){
             currentComment.setBody(StringTrimmer.trim(updatedComment.getBody()));
+            currentComment.setImage(updatedComment.getImage());
             currentComment.setUpdatedAt(LocalDateTime.now());
             currentComment.setUpdated(true);
 
@@ -94,7 +95,7 @@ public class CommentController {
         }
         AppUser currentAppUser = appUserService.getCurrentAppUser();
         if (Objects.equals(currentAppUser.getId(), currentComment.getAuthor().getId())) {
-            Status status = currentComment.getStatus();
+            Status status = statusService.findById(currentComment.getStatus().getId()).get();
             status.getCommentList().remove(currentComment);
             statusService.save(status);
 

@@ -1,5 +1,6 @@
 package com.blueberry.model.app;
 
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
