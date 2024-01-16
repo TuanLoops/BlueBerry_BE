@@ -13,13 +13,16 @@ public class AppUserDTOConverter implements Converter<AppUser, AppUserDTO> {
     @Override
     public AppUserDTO convert(MappingContext<AppUser, AppUserDTO> mappingContext) {
       AppUser source = mappingContext.getSource();
-        AppUserDTO destination = new AppUserDTO();
-        destination.setId(source.getId());
-        destination.setFirstName(source.getFirstName());
-        destination.setLastName(source.getLastName());
-        destination.setBannerImage(source.getBannerImage());
-        destination.setAvatarImage(source.getAvatarImage());
-        destination.setFullName(source.getFirstName() +" "+ source.getLastName());
-        return destination;
+        return converter(source);
+    }
+    public static AppUserDTO converter(AppUser appUser) {
+        AppUserDTO appUserDTO = new AppUserDTO();
+        appUserDTO.setId(appUser.getId());
+        appUserDTO.setFirstName(appUser.getFirstName());
+        appUserDTO.setLastName(appUser.getLastName());
+        appUserDTO.setBannerImage(appUser.getBannerImage());
+        appUserDTO.setAvatarImage(appUser.getAvatarImage());
+        appUserDTO.setFullName(appUser.getFirstName() +" "+ appUser.getLastName());
+        return appUserDTO;
     }
 }

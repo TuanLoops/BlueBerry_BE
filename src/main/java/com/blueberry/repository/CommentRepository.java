@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    Iterable<Comment> findAllByStatusIdAndAuthorId(Long statusId, Long authorId);
+    Iterable<Comment> findAllByStatusIdAndIsDeleted(Long statusId, Boolean deleted);
 
     void deleteByStatusIdAndAuthorId(Long statusId, Long authorId);
 

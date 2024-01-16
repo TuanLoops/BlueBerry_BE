@@ -1,21 +1,17 @@
 package com.blueberry.model.dto;
 
 import com.blueberry.model.app.Image;
-import com.blueberry.model.app.PrivacyLevel;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
-public class StatusDTO {
+public class CommentDTO {
     private Long id;
+    private Long statusId;
+    private AppUserDTO author;
     private String body;
     private LocalDateTime createdAt;
+    private Image image;
     private boolean isUpdated;
-    private AppUserDTO author;
-    private List<Image> imageList;
-    private int comment;
-    private int like;
-    private PrivacyLevel privacyLevel;
 }
