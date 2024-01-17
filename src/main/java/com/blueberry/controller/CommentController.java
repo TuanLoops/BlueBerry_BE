@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -56,12 +57,12 @@ public class CommentController {
         newComment.setAuthor(currentAppUser);
         newComment.setStatusId(status.getId());
         newComment.setBody(StringTrimmer.trim(newComment.getBody()));
+        newComment.setLikes(new ArrayList<>());
         newComment.setCreatedAt(LocalDateTime.now());
         Comment savedComment = commentService.save(newComment);
 
         status.getCommentList().add(savedComment);
         status.setLastActivity(LocalDateTime.now());
-
         statusService.save(status);
 
         return new ResponseEntity<>(modelMapperUtil.map(savedComment,CommentDTO.class), HttpStatus.CREATED);
