@@ -2,6 +2,7 @@ package com.blueberry.controller;
 
 import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.Comment;
+import com.blueberry.model.app.Like;
 import com.blueberry.model.app.Status;
 import com.blueberry.model.dto.CommentDTO;
 import com.blueberry.model.dto.MessageResponse;
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth/api/status")
@@ -40,9 +42,7 @@ public class CommentController {
         if (status == null) {
             return ResponseEntity.notFound().build();
         }
-
         List<Comment> commentList = (List<Comment>) commentService.findAllByStatusIdAndIsDeleted(statusId,false);
-
         return new ResponseEntity<>(modelMapperUtil.mapList(commentList,CommentDTO.class), HttpStatus.OK);
     }
 
@@ -100,5 +100,15 @@ public class CommentController {
             return new ResponseEntity<>(commentId, HttpStatus.OK);
         }
         return new ResponseEntity<>(new MessageResponse("Access denied !!"), HttpStatus.FORBIDDEN);
+    }
+    @PostMapping("/comments/{commentId}/like")
+    public ResponseEntity<?> likeComment(@PathVariable Long commentId) {
+        int like = commentService.likeComment(commentId);
+        if (like == 1) {
+            return new ResponseEntity<>(1, HttpStatus.OK);
+        } else if (like == 0) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } else
+            return new ResponseEntity<>(-1, HttpStatus.OK);
     }
 }

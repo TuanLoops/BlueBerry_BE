@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -41,5 +42,11 @@ public class Comment {
     @Column(nullable = false)
     private boolean isDeleted;
 
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "comment_id")
+    private List<CommentLike> likes;
+    
+    @Transient
+    private boolean liked;
 
 }
