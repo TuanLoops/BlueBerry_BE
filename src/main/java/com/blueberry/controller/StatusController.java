@@ -9,6 +9,7 @@ import com.blueberry.service.AppUserService;
 import com.blueberry.service.LikeService;
 import com.blueberry.service.StatusService;
 import com.blueberry.service.UserService;
+import com.blueberry.service.impl.FriendService;
 import com.blueberry.util.ModelMapperUtil;
 import com.blueberry.util.StringTrimmer;
 import jakarta.persistence.RollbackException;
@@ -35,6 +36,7 @@ public class StatusController {
     private AppUserService appUserService;
     private ModelMapperUtil modelMapperUtil;
     private LikeService likeService;
+    private FriendService friendService;
     private final Sort SORT_BY_TIME_DESC = Sort.by(Sort.Direction.DESC, "lastActivity");
 
     @GetMapping("/{id}")
@@ -155,20 +157,21 @@ public class StatusController {
         }
         privacyLevels.add(PrivacyLevel.PUBLIC);
         privacyLevels.add(PrivacyLevel.FRIENDS);
-        List<Status> statuses = (List<Status>) statusService.findAllByAuthorIdAndPrivaty(id, privacyLevels, SORT_BY_TIME_DESC);
+        List<Status> statuses = (List<Status>) statusService.findAllByAuthorIdAndPrivacy(id, privacyLevels, SORT_BY_TIME_DESC);
         if (statuses.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(modelMapperUtil.mapList(statuses, StatusDTO.class), HttpStatus.OK);
     }
+
     @GetMapping()
     public ResponseEntity<List<StatusDTO>> findAllStatus(){
         AppUser appUser = appUserService.getCurrentAppUser();
-        List<Long> friends = new ArrayList<>();
-        friends.add(2L);
-        List<Status> statuses = (List<Status>) statusService.findAllByPrivacy(appUser.getId(),friends);
+        List<AppUser> friendList = friendService.getFriendList(appUser.getId());
+        List<Status> statuses = (List<Status>) statusService.findAllByPrivacy(appUser, friendList);
         return new ResponseEntity<>(modelMapperUtil.mapList(statuses, StatusDTO.class), HttpStatus.OK);
     }
+
     @PostMapping("/{id}/like")
     public ResponseEntity<?> likeStatus(@PathVariable Long id){
         AppUser appUser = appUserService.getCurrentAppUser();

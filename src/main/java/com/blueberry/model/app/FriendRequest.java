@@ -11,25 +11,23 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "friend_relationships")
-public class FriendRelationships {
+@Table(name = "friend_requests")
+public class FriendRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_sender_id")
+    @JoinColumn(name = "sender_id")
     private AppUser sender;
 
     @ManyToOne
-    @JoinColumn(name = "user_receiver_id")
+    @JoinColumn(name = "receiver_id")
     private AppUser receiver;
 
     private LocalDateTime createAt;
 
-    private LocalDateTime updateAt;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "request_status")
-    private FriendRequests requestStatus;
+    private FriendRequestStatus status;
 }

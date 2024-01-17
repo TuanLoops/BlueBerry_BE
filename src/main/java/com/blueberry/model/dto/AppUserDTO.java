@@ -2,6 +2,7 @@ package com.blueberry.model.dto;
 
 import lombok.Data;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class AppUserDTO {
@@ -11,5 +12,5 @@ public class AppUserDTO {
     private String fullName;
     private String avatarImage;
     private String bannerImage;
-    private boolean isOnline;
+    private LocalDateTime lastOnline;
 }
