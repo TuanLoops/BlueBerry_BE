@@ -4,6 +4,7 @@ import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.Comment;
 import com.blueberry.model.app.CommentLike;
 import com.blueberry.model.app.Like;
+import com.blueberry.model.dto.MessageResponse;
 import com.blueberry.repository.CommentLikeRepository;
 import com.blueberry.repository.CommentRepository;
 import com.blueberry.service.AppUserService;
@@ -63,23 +64,23 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public int likeComment(Long commentId) {
+    public ResponseEntity<?> likeComment(Long commentId) {
         AppUser currentUser = appUserService.getCurrentAppUser();
         Optional<CommentLike> commentLike=  commentLikeRepository.findByAuthorIdAndCommentId(currentUser.getId(),commentId);
         try {
             if(commentLike.isPresent()){
                 commentLikeRepository.delete(commentLike.get());
-                return -1;
+                return new ResponseEntity<>(-1,HttpStatus.OK);
             }else{
                 CommentLike commentLikeNew = new CommentLike();
                 commentLikeNew.setCommentId(commentId);
                 commentLikeNew.setAuthorId(currentUser.getId());
                 commentLikeRepository.save(commentLikeNew);
-                return 1;
+                return new ResponseEntity<>(1, HttpStatus.OK);
             }
         }catch (Exception e){
             System.out.println(e.getMessage());
-            return 0;
+            return new ResponseEntity<>(new MessageResponse("Error can not save !!"),HttpStatus.BAD_REQUEST);
         }
     }
 

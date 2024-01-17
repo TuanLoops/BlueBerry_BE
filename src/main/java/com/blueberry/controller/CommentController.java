@@ -103,12 +103,6 @@ public class CommentController {
     }
     @PostMapping("/comments/{commentId}/like")
     public ResponseEntity<?> likeComment(@PathVariable Long commentId) {
-        int like = commentService.likeComment(commentId);
-        if (like == 1) {
-            return new ResponseEntity<>(1, HttpStatus.OK);
-        } else if (like == 0) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } else
-            return new ResponseEntity<>(-1, HttpStatus.OK);
+        return commentService.likeComment(commentId);
     }
 }
