@@ -1,6 +1,7 @@
 package com.blueberry.model.dto;
 
 import com.blueberry.model.dto.converter.AppUserDTOConverter;
+import com.blueberry.model.dto.converter.CommentDTOConverter;
 import com.blueberry.model.dto.converter.StatusDTOConverter;
 import com.blueberry.model.dto.converter.UserDetailsConverter;
 import org.modelmapper.ModelMapper;
@@ -19,6 +20,7 @@ public class ModelMapperConfig {
         modelMapper.addConverter(new AppUserDTOConverter());
         modelMapper.addConverter(new UserDetailsConverter());
         modelMapper.addConverter(new StatusDTOConverter());
+        modelMapper.addConverter(new CommentDTOConverter());
         return modelMapper;
     }
 

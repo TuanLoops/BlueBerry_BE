@@ -1,5 +1,6 @@
 package com.blueberry.repository;
 
+import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.PrivacyLevel;
 import com.blueberry.model.app.Status;
 import org.springframework.data.domain.Sort;
@@ -24,7 +25,7 @@ public interface StatusRepository extends JpaRepository<Status, Long> {
     Iterable<Status> findAllByAuthorIdAndIsDeletedAndBodyContaining(Long authorId, boolean isDeleted, String query);
 
     @Query("SELECT s FROM Status s " +
-            "    WHERE ((s.author.id = :id AND s.privacyLevel != 'PRIVATE' )OR (s.author.id IN :friends AND s.privacyLevel = 'FRIENDS')" +
+            "    WHERE ((s.author = :user AND s.privacyLevel != 'PRIVATE' )OR (s.author IN :friendList AND s.privacyLevel = 'FRIENDS')" +
             "       OR s.privacyLevel='PUBLIC' ) AND s.isDeleted = false ORDER BY s.lastActivity DESC")
-    Iterable<Status> findAllByPrivacy(@Param("id") Long userId, @Param("friends") List<Long> friends);
+    Iterable<Status> findAllByPrivacy(@Param("user") AppUser user, @Param("friendList") List<AppUser> friendList);
 }

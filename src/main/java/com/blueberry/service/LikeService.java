@@ -9,4 +9,5 @@ public interface LikeService extends GenericService<Like> {
     Optional<Like> findByStatusIdAndAuthorId(Long statusId, Long authorId);
 
     void deleteByStatusIdAndAuthorId(Long statusId, Long authorId);
+    boolean deleteLike(Like like);
 }
