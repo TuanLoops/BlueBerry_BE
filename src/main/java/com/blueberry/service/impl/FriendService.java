@@ -92,18 +92,10 @@ public class FriendService {
         friendshipRepository.save(friendship);
     }
 
-    public void unfriend(Long userId, Long friendId) {
-        AppUser user = appUserRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        AppUser friend = appUserRepository.findById(friendId)
-                .orElseThrow(() -> new EntityNotFoundException("Friend not found"));
-
+    public void unfriend(AppUser user, AppUser friend) {
         Optional<Friendship> friendship1 = friendshipRepository.findByUserAndFriend(user, friend);
-
         Optional<Friendship> friendship2 = friendshipRepository.findByUserAndFriend(friend, user);
-
         friendship1.ifPresent(friendship -> friendshipRepository.delete(friendship));
-
         friendship2.ifPresent(friendship -> friendshipRepository.delete(friendship));
     }
 

@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -59,9 +60,11 @@ public class FriendController {
                 FriendRequestDTO.class), HttpStatus.OK);
     }
 
-    @PostMapping("/friend-requests/send")
+    @PostMapping("/friend-request/send")
     public ResponseEntity<?> sendFriendRequest(@RequestParam Long receiverId) {
         AppUser sender = appUserService.getCurrentAppUser();
+        if (Objects.equals(sender.getId(), receiverId))
+            return new ResponseEntity<>("Add friend with self not allowed", HttpStatus.BAD_REQUEST);
         AppUser receiver = appUserService.findById(receiverId).orElseThrow(() -> new EntityNotFoundException(
                 "Receiver not found"));
         if (friendService.checkFriend(sender, receiver)) {
@@ -75,7 +78,6 @@ public class FriendController {
         } else return new ResponseEntity<>("Pending friend request already exist", HttpStatus.CONFLICT);
     }
 
-    // Other endpoints for managing friendships and friend requests
     @PutMapping("/friend-request/respond")
     public ResponseEntity<?> friendRequestResponse(@RequestBody FriendRequestResponse response) {
         try {
@@ -90,9 +92,11 @@ public class FriendController {
     }
 
     @DeleteMapping("/unfriend/{friendId}")
-    public ResponseEntity<String> unfriend(@PathVariable Long friendId) {
-        Long userId = appUserService.getCurrentAppUser().getId();
-        friendService.unfriend(userId, friendId);
-        return ResponseEntity.ok("Unfriended successfully");
+    public ResponseEntity<?> unfriend(@PathVariable Long friendId) {
+        AppUser currentUser = appUserService.getCurrentAppUser();
+        Optional<AppUser> friend = appUserService.findById(friendId);
+        if (friend.isEmpty()) return new ResponseEntity<>("Friend not found", HttpStatus.NOT_FOUND);
+        friendService.unfriend(currentUser, friend.get());
+        return new ResponseEntity<>(friend.get(), HttpStatus.OK);
     }
 }
