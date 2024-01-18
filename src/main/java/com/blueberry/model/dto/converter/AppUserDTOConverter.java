@@ -7,14 +7,14 @@ import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
 
-
 public class AppUserDTOConverter implements Converter<AppUser, AppUserDTO> {
 
     @Override
     public AppUserDTO convert(MappingContext<AppUser, AppUserDTO> mappingContext) {
-      AppUser source = mappingContext.getSource();
+        AppUser source = mappingContext.getSource();
         return converter(source);
     }
+
     public static AppUserDTO converter(AppUser appUser) {
         AppUserDTO appUserDTO = new AppUserDTO();
         appUserDTO.setId(appUser.getId());
@@ -22,7 +22,8 @@ public class AppUserDTOConverter implements Converter<AppUser, AppUserDTO> {
         appUserDTO.setLastName(appUser.getLastName());
         appUserDTO.setBannerImage(appUser.getBannerImage());
         appUserDTO.setAvatarImage(appUser.getAvatarImage());
-        appUserDTO.setFullName(appUser.getFirstName() +" "+ appUser.getLastName());
+        appUserDTO.setFullName(appUser.getFirstName() + " " + appUser.getLastName());
+        appUserDTO.setLastOnline(appUser.getLastOnline());
         return appUserDTO;
     }
 }

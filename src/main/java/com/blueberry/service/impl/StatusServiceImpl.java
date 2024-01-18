@@ -64,7 +64,7 @@ public class StatusServiceImpl implements StatusService {
     }
 
     @Override
-    public Iterable<Status> findAllByAuthorIdAndPrivaty(Long authorId, List<PrivacyLevel> privacyLevels, Sort sort) {
+    public Iterable<Status> findAllByAuthorIdAndPrivacy(Long authorId, List<PrivacyLevel> privacyLevels, Sort sort) {
         return statusRepository.findAllByAuthorIdAndIsDeletedAndPrivacyLevelIn(authorId, false, privacyLevels, sort);
     }
 
@@ -74,14 +74,15 @@ public class StatusServiceImpl implements StatusService {
     }
 
     @Override
-    public Iterable<Status> findAllByPrivacy(Long userId, List<Long> friends) {
+    public Iterable<Status> findAllByPrivacy(AppUser user, List<AppUser> friendList) {
         AppUser appUser = appUserService.getCurrentAppUser();
-        Iterable<Status> statuses = statusRepository.findAllByPrivacy(userId, friends);
+        Iterable<Status> statuses = statusRepository.findAllByPrivacy(user, friendList);
         for (Status status : statuses) {
             status.setLiked(likedByCurrentUser(status.getLikeList(),appUser.getId()));
         }
         return statuses;
     }
+
     private boolean likedByCurrentUser(List<Like> likes,Long currentUserId){
         for (Like like: likes) {
             if (Objects.equals(like.getAuthorId(), currentUserId)){

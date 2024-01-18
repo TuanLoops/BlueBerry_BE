@@ -14,4 +14,6 @@ public class CommentDTO {
     private LocalDateTime createdAt;
     private Image image;
     private boolean isUpdated;
+    private int countLikes;
+    private boolean liked;
 }

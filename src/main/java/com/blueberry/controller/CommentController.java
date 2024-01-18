@@ -2,6 +2,7 @@ package com.blueberry.controller;
 
 import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.Comment;
+import com.blueberry.model.app.Like;
 import com.blueberry.model.app.Status;
 import com.blueberry.model.dto.CommentDTO;
 import com.blueberry.model.dto.MessageResponse;
@@ -18,8 +19,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth/api/status")
@@ -40,9 +43,7 @@ public class CommentController {
         if (status == null) {
             return ResponseEntity.notFound().build();
         }
-
         List<Comment> commentList = (List<Comment>) commentService.findAllByStatusIdAndIsDeleted(statusId,false);
-
         return new ResponseEntity<>(modelMapperUtil.mapList(commentList,CommentDTO.class), HttpStatus.OK);
     }
 
@@ -56,12 +57,12 @@ public class CommentController {
         newComment.setAuthor(currentAppUser);
         newComment.setStatusId(status.getId());
         newComment.setBody(StringTrimmer.trim(newComment.getBody()));
+        newComment.setLikes(new ArrayList<>());
         newComment.setCreatedAt(LocalDateTime.now());
         Comment savedComment = commentService.save(newComment);
 
         status.getCommentList().add(savedComment);
         status.setLastActivity(LocalDateTime.now());
-
         statusService.save(status);
 
         return new ResponseEntity<>(modelMapperUtil.map(savedComment,CommentDTO.class), HttpStatus.CREATED);
@@ -100,5 +101,9 @@ public class CommentController {
             return new ResponseEntity<>(commentId, HttpStatus.OK);
         }
         return new ResponseEntity<>(new MessageResponse("Access denied !!"), HttpStatus.FORBIDDEN);
+    }
+    @PostMapping("/comments/{commentId}/like")
+    public ResponseEntity<?> likeComment(@PathVariable Long commentId) {
+        return commentService.likeComment(commentId);
     }
 }

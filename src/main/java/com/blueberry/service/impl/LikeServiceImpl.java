@@ -43,4 +43,14 @@ public class LikeServiceImpl implements LikeService {
     public void deleteByStatusIdAndAuthorId(Long statusId, Long authorId) {
         likeRepository.deleteByStatusIdAndAuthorId(statusId, authorId);
     }
+
+    @Override
+    public boolean deleteLike(Like like) {
+        try {
+            likeRepository.delete(like);
+            return true;
+        }catch (IllegalArgumentException e){
+            return false;
+        }
+    }
 }
