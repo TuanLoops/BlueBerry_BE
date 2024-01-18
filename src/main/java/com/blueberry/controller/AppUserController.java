@@ -66,7 +66,7 @@ public class AppUserController {
             appUserOld.setHobbies(userRequest.getHobbies());
             appUserOld.setAddress(userRequest.getAddress());
             appUserService.save(appUserOld);
-            return new ResponseEntity<>(modelMapper.map(appUserOld,AppUserRequest.class),HttpStatus.OK);
+            return new ResponseEntity<>(modelMapper.map(appUserOld,UserDetails.class),HttpStatus.OK);
         }
         return new ResponseEntity<>(new MessageResponse(""),HttpStatus.NOT_FOUND);
     }
