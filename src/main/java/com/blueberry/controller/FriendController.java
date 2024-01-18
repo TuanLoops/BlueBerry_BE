@@ -4,6 +4,7 @@ import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.FriendRequest;
 import com.blueberry.model.app.FriendRequestStatus;
 import com.blueberry.model.dto.AppUserDTO;
+import com.blueberry.model.dto.FriendRequestDTO;
 import com.blueberry.model.request.FriendRequestResponse;
 import com.blueberry.service.AppUserService;
 import com.blueberry.service.impl.FriendService;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -42,15 +44,27 @@ public class FriendController {
                 AppUserDTO.class), HttpStatus.OK);
     }
 
-    @GetMapping("/friend-requests/{userId}")
-    public ResponseEntity<List<FriendRequest>> getPendingFriendRequests(@PathVariable Long userId) {
-        List<FriendRequest> friendRequests = friendService.getPendingFriendRequests(userId);
-        return new ResponseEntity<>(friendRequests, HttpStatus.OK);
+    @GetMapping("/incoming-request")
+    public ResponseEntity<List<FriendRequestDTO>> getIncomingFriendRequests() {
+        AppUser currentUser = appUserService.getCurrentAppUser();
+        List<FriendRequest> friendRequests = friendService.getIncomingFriendRequests(currentUser);
+        return new ResponseEntity<>(modelMapper.mapList(friendRequests,
+                FriendRequestDTO.class), HttpStatus.OK);
     }
 
-    @PostMapping("/friend-requests/send")
-    public ResponseEntity<String> sendFriendRequest(@RequestBody Long receiverId) {
+    @GetMapping("/sent-request")
+    public ResponseEntity<List<FriendRequestDTO>> getSentFriendRequests() {
+        AppUser currentUser = appUserService.getCurrentAppUser();
+        List<FriendRequest> friendRequests = friendService.getSentFriendRequests(currentUser);
+        return new ResponseEntity<>(modelMapper.mapList(friendRequests,
+                FriendRequestDTO.class), HttpStatus.OK);
+    }
+
+    @PostMapping("/friend-request/send")
+    public ResponseEntity<?> sendFriendRequest(@RequestParam Long receiverId) {
         AppUser sender = appUserService.getCurrentAppUser();
+        if (Objects.equals(sender.getId(), receiverId))
+            return new ResponseEntity<>("Add friend with self not allowed", HttpStatus.BAD_REQUEST);
         AppUser receiver = appUserService.findById(receiverId).orElseThrow(() -> new EntityNotFoundException(
                 "Receiver not found"));
         if (friendService.checkFriend(sender, receiver)) {
@@ -59,22 +73,30 @@ public class FriendController {
         Optional<FriendRequest> request = friendService.findTopBySenderAndReceiverOrderByCreateAtDesc(sender,
                 receiver);
         if (request.isEmpty() || !request.get().getStatus().equals(FriendRequestStatus.PENDING)) {
-            friendService.sendFriendRequest(sender, receiver);
-            return new ResponseEntity<>("Friend request sent successfully", HttpStatus.OK);
+            FriendRequest friendRequest = friendService.sendFriendRequest(sender, receiver);
+            return new ResponseEntity<>(modelMapper.map(friendRequest, FriendRequestDTO.class), HttpStatus.OK);
         } else return new ResponseEntity<>("Pending friend request already exist", HttpStatus.CONFLICT);
     }
 
-    // Other endpoints for managing friendships and friend requests
     @PutMapping("/friend-request/respond")
-    public ResponseEntity<String> friendRequestResponse(@RequestBody FriendRequestResponse response) {
-        friendService.friendRequestResponse(response.getRequestId(), response.getStatus());
-        return ResponseEntity.ok("Friend request responded successfully");
+    public ResponseEntity<?> friendRequestResponse(@RequestBody FriendRequestResponse response) {
+        try {
+            FriendRequest friendRequest = friendService.friendRequestResponse(response.getRequestId(),
+                    response.getStatus());
+            return new ResponseEntity<>(modelMapper.map(friendRequest, FriendRequestDTO.class), HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @DeleteMapping("/unfriend/{friendId}")
-    public ResponseEntity<String> unfriend(@PathVariable Long friendId) {
-        Long userId = appUserService.getCurrentAppUser().getId();
-        friendService.unfriend(userId, friendId);
-        return ResponseEntity.ok("Unfriended successfully");
+    public ResponseEntity<?> unfriend(@PathVariable Long friendId) {
+        AppUser currentUser = appUserService.getCurrentAppUser();
+        Optional<AppUser> friend = appUserService.findById(friendId);
+        if (friend.isEmpty()) return new ResponseEntity<>("Friend not found", HttpStatus.NOT_FOUND);
+        friendService.unfriend(currentUser, friend.get());
+        return new ResponseEntity<>(friend.get(), HttpStatus.OK);
     }
 }

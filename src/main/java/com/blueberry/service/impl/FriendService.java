@@ -48,26 +48,28 @@ public class FriendService {
                 .collect(Collectors.toList());
     }
 
-    public List<FriendRequest> getPendingFriendRequests(Long userId) {
-        AppUser user = appUserRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not " +
-                "found"));
+    public List<FriendRequest> getIncomingFriendRequests(AppUser user) {
         return friendRequestRepository.findByReceiverAndStatus(user, FriendRequestStatus.PENDING);
     }
 
-    public void sendFriendRequest(AppUser sender, AppUser receiver) {
-            FriendRequest friendRequest = new FriendRequest();
-            friendRequest.setSender(sender);
-            friendRequest.setReceiver(receiver);
-            friendRequest.setCreateAt(LocalDateTime.now());
-            friendRequest.setStatus(FriendRequestStatus.PENDING);
-            friendRequestRepository.save(friendRequest);
+    public List<FriendRequest> getSentFriendRequests(AppUser user) {
+        return friendRequestRepository.findBySenderAndStatus(user, FriendRequestStatus.PENDING);
+    }
+
+    public FriendRequest sendFriendRequest(AppUser sender, AppUser receiver) {
+        FriendRequest friendRequest = new FriendRequest();
+        friendRequest.setSender(sender);
+        friendRequest.setReceiver(receiver);
+        friendRequest.setCreateAt(LocalDateTime.now());
+        friendRequest.setStatus(FriendRequestStatus.PENDING);
+        return friendRequestRepository.save(friendRequest);
     }
 
     public Optional<FriendRequest> findTopBySenderAndReceiverOrderByCreateAtDesc(AppUser sender, AppUser receiver) {
         return friendRequestRepository.findTopBySenderAndReceiverOrderByCreateAtDesc(sender, receiver);
     }
 
-    public void friendRequestResponse(Long requestId, FriendRequestStatus status) {
+    public FriendRequest friendRequestResponse(Long requestId, FriendRequestStatus status) {
         FriendRequest friendRequest = friendRequestRepository.findById(requestId)
                 .orElseThrow(() -> new EntityNotFoundException("Friend request not found"));
 
@@ -75,20 +77,12 @@ public class FriendService {
             throw new IllegalStateException("Friend request is no longer pending.");
         }
 
-        switch (status) {
-            case ACCEPTED:
-                establishFriendship(friendRequest.getSender(), friendRequest.getReceiver());
-                break;
-            case DECLINED:
-                break;
-            case CANCELED:
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid friend request response");
+        if (status.equals(FriendRequestStatus.ACCEPTED)) {
+            establishFriendship(friendRequest.getSender(), friendRequest.getReceiver());
         }
 
         friendRequest.setStatus(status);
-        friendRequestRepository.save(friendRequest);
+        return friendRequestRepository.save(friendRequest);
     }
 
     private void establishFriendship(AppUser sender, AppUser receiver) {
@@ -98,18 +92,10 @@ public class FriendService {
         friendshipRepository.save(friendship);
     }
 
-    public void unfriend(Long userId, Long friendId) {
-        AppUser user = appUserRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        AppUser friend = appUserRepository.findById(friendId)
-                .orElseThrow(() -> new EntityNotFoundException("Friend not found"));
-
+    public void unfriend(AppUser user, AppUser friend) {
         Optional<Friendship> friendship1 = friendshipRepository.findByUserAndFriend(user, friend);
-
         Optional<Friendship> friendship2 = friendshipRepository.findByUserAndFriend(friend, user);
-
         friendship1.ifPresent(friendship -> friendshipRepository.delete(friendship));
-
         friendship2.ifPresent(friendship -> friendshipRepository.delete(friendship));
     }
 
