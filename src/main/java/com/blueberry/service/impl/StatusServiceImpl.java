@@ -83,6 +83,15 @@ public class StatusServiceImpl implements StatusService {
         return statuses;
     }
 
+    @Override
+    public Iterable<Status> findStatusByNameContaining(AppUser user, List<AppUser> friendList, String body) {
+        Iterable<Status> statuses = statusRepository.findStatusByNameContaining(user, friendList,body);
+        for (Status status : statuses) {
+            status.setLiked(likedByCurrentUser(status.getLikeList(),user.getId()));
+        }
+        return statuses;
+    }
+
     private boolean likedByCurrentUser(List<Like> likes,Long currentUserId){
         for (Like like: likes) {
             if (Objects.equals(like.getAuthorId(), currentUserId)){

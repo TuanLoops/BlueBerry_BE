@@ -58,10 +58,9 @@ public class StatusController {
 
     @GetMapping("/search")
     public ResponseEntity<List<StatusDTO>> getAllStatusByBodyContaining(@RequestParam("query") String query) {
-        User user = userService.getCurrentUser();
-        AppUser appUser = appUserService.findByUserName(user.getEmail());
-        List<Status> statuses = (List<Status>) statusService
-                .findAllByAuthorIdAndIsDeletedAndBodyContaining(appUser.getId(), false, query);
+        AppUser appUser = appUserService.getCurrentAppUser();
+        List<AppUser> friendList = friendService.getFriendList(appUser.getId());
+        List<Status> statuses = (List<Status>) statusService.findStatusByNameContaining(appUser,friendList,query);
         return new ResponseEntity<>(modelMapperUtil.mapList(statuses, StatusDTO.class), HttpStatus.OK);
     }
 

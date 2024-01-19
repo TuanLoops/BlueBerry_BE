@@ -28,4 +28,11 @@ public interface StatusRepository extends JpaRepository<Status, Long> {
             "    WHERE ((s.author = :user AND s.privacyLevel != 'PRIVATE' )OR (s.author IN :friendList AND s.privacyLevel = 'FRIENDS')" +
             "       OR s.privacyLevel='PUBLIC' ) AND s.isDeleted = false ORDER BY s.lastActivity DESC")
     Iterable<Status> findAllByPrivacy(@Param("user") AppUser user, @Param("friendList") List<AppUser> friendList);
+
+    @Query("SELECT s FROM Status s " +
+            "    WHERE ((s.author = :user AND s.privacyLevel != 'PRIVATE' )OR (s.author IN :friendList AND s.privacyLevel = 'FRIENDS')" +
+            "       OR s.privacyLevel='PUBLIC' ) AND s.isDeleted = false" +
+            "       AND LOWER(s.body) LIKE LOWER(concat('%',:body,'%'))  ORDER BY s.lastActivity DESC ")
+    Iterable<Status> findStatusByNameContaining(@Param("user") AppUser user, @Param("friendList") List<AppUser> friendList,@Param("body") String body);
+
 }
