@@ -72,17 +72,22 @@ public class CommentController {
     public ResponseEntity<?> editCommentById(@PathVariable Long commentId, @RequestBody Comment updatedComment) {
         Comment currentComment = commentService.findById(commentId).orElse(null);
         if (currentComment == null) {
-            return ResponseEntity.notFound().build();
+            return new ResponseEntity<>(new MessageResponse("Not Found !!"),HttpStatus.NOT_FOUND);
         }
         AppUser currentAppUser = appUserService.getCurrentAppUser();
         if(Objects.equals(currentAppUser.getId(), currentComment.getAuthor().getId())){
-            currentComment.setBody(StringTrimmer.trim(updatedComment.getBody()));
-            currentComment.setUpdatedAt(LocalDateTime.now());
-            currentComment.setUpdated(true);
+            try {
+                currentComment.setBody(StringTrimmer.trim(updatedComment.getBody()));
+                currentComment.setUpdatedAt(LocalDateTime.now());
+                currentComment.setUpdated(true);
 
-            Comment savedComment = commentService.save(currentComment);
+                Comment savedComment = commentService.save(currentComment);
 
-            return new ResponseEntity<>(modelMapperUtil.map(savedComment,CommentDTO.class), HttpStatus.OK);
+                return new ResponseEntity<>(modelMapperUtil.map(savedComment,CommentDTO.class), HttpStatus.OK);
+            }catch (Exception e){
+                return new ResponseEntity<>(new MessageResponse("Can't save comment!"),HttpStatus.BAD_REQUEST);
+            }
+
         }
         return new ResponseEntity<>(new MessageResponse("Access denied!"),HttpStatus.FORBIDDEN);
     }

@@ -35,7 +35,12 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Optional<Comment> findById(Long id) {
-        return commentRepository.findById(id);
+        AppUser appUser = appUserService.getCurrentAppUser();
+        Optional<Comment> comment = commentRepository.findById(id);
+        if (comment.isPresent()) {
+            comment.get().setLiked(isLiked(comment.get().getLikes(),appUser.getId()));
+        }
+        return comment;
     }
 
     @Override
