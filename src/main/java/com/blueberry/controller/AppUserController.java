@@ -85,4 +85,10 @@ public class AppUserController {
         appUserService.save(appUser);
         return new ResponseEntity<>(image,HttpStatus.OK);
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> search(@RequestParam String query){
+        List<AppUser> appUsers = (List<AppUser>) appUserService.findByName(query,false);
+        return new ResponseEntity<>(modelMapper.mapList(appUsers,AppUserDTO.class),HttpStatus.OK);
+    }
 }

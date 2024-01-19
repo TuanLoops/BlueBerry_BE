@@ -53,4 +53,9 @@ public class AppUserServiceImpl implements AppUserService {
         User user = userService.getCurrentUser();
         return this.findByUserName(user.getEmail());
     }
+
+    @Override
+    public Iterable<AppUser> findByName(String name, boolean banned) {
+        return appUserRepository.findByName(name, banned);
+    }
 }
