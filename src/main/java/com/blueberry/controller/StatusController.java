@@ -37,23 +37,15 @@ public class StatusController {
     private ModelMapperUtil modelMapperUtil;
     private LikeService likeService;
     private FriendService friendService;
-    private final Sort SORT_BY_TIME_DESC = Sort.by(Sort.Direction.DESC, "lastActivity");
 
     @GetMapping("/{id}")
     public ResponseEntity<StatusDTO> findStatusById(@PathVariable Long id) {
-        Optional<Status> status = statusService.findById(id);
+        Optional<Status> status = statusService.findByIdAndDeleted(id,false);
         if (status.isPresent()) {
             return new ResponseEntity<>(modelMapperUtil.map(status, StatusDTO.class), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-    }
-
-    @GetMapping("/current-user")
-    public ResponseEntity<List<StatusDTO>> getAllByCurrentUser() {
-        AppUser appUser = appUserService.getCurrentAppUser();
-        List<Status> statuses = (List<Status>) statusService.findAllByAuthorId(appUser.getId(), SORT_BY_TIME_DESC);
-        return new ResponseEntity<>(modelMapperUtil.mapList(statuses, StatusDTO.class), HttpStatus.OK);
     }
 
     @GetMapping("/search")
@@ -63,7 +55,6 @@ public class StatusController {
         List<Status> statuses = (List<Status>) statusService.findStatusByNameContaining(appUser,friendList,query);
         return new ResponseEntity<>(modelMapperUtil.mapList(statuses, StatusDTO.class), HttpStatus.OK);
     }
-
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody StatusRequest statusRequest) {
@@ -150,13 +141,9 @@ public class StatusController {
     @GetMapping("/users/{id}")
     public ResponseEntity<List<StatusDTO>> getStatusByUserId(@PathVariable Long id) {
         AppUser currentUser = appUserService.getCurrentAppUser();
-        List<PrivacyLevel> privacyLevels = new ArrayList<>();
-        if(Objects.equals(currentUser.getId(), id)) {
-            privacyLevels.add(PrivacyLevel.PRIVATE);
-        }
-        privacyLevels.add(PrivacyLevel.PUBLIC);
-        privacyLevels.add(PrivacyLevel.FRIENDS);
-        List<Status> statuses = (List<Status>) statusService.findAllByAuthorIdAndPrivacy(id, privacyLevels, SORT_BY_TIME_DESC);
+        AppUser appUser = appUserService.findById(id).get();
+
+        List<Status> statuses = (List<Status>) statusService.findAllByAuthor(appUser,currentUser);
         if (statuses.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }

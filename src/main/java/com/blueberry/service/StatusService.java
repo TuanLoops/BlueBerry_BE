@@ -7,15 +7,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface StatusService extends GenericService<Status>{
-
-    Iterable<Status> findAllByAuthorId(Long id);
-
-    Iterable<Status> findAllByAuthorIdAndIsDeleted(Long authorId, boolean isDeleted);
-    Iterable<Status> findAllByAuthorId(Long authorId, Sort sort);
-    Iterable<Status> findAllByAuthorIdAndPrivacy(Long authorId, List<PrivacyLevel> privacyLevels, Sort sort);
-    Iterable<Status> findAllByAuthorIdAndIsDeletedAndBodyContaining(Long authorId, boolean isDeleted, String query);
+    Optional<Status> findByIdAndDeleted(Long id, boolean deleted);
+    Iterable<Status> findAllByAuthor(AppUser currentUser, AppUser user);
     Iterable<Status> findAllByPrivacy(AppUser user, List<AppUser> friendList);
     Iterable<Status> findStatusByNameContaining(AppUser user, List<AppUser> friendList, String body);
 }

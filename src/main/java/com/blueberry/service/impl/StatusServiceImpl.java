@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -19,9 +20,10 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class StatusServiceImpl implements StatusService {
-
+    private final Sort SORT_BY_TIME_DESC = Sort.by(Sort.Direction.DESC, "lastActivity");
     private StatusRepository statusRepository;
     private AppUserService appUserService;
+    private FriendService friendService;
 
     @Override
     public Iterable<Status> findAll() {
@@ -30,12 +32,25 @@ public class StatusServiceImpl implements StatusService {
 
     @Override
     public Optional<Status> findById(Long id) {
-        return statusRepository.findById(id);
+        Optional<Status> status= statusRepository.findById(id);
+        AppUser appUser = appUserService.getCurrentAppUser();
+        status.ifPresent(value -> value.setLiked(likedByCurrentUser(value.getLikeList(), appUser.getId())));
+        return status;
+    }
+    @Override
+    public Optional<Status> findByIdAndDeleted(Long id,boolean deleted) {
+        Optional<Status> status= statusRepository.findByIdAndDeleted(id,deleted);
+        AppUser appUser = appUserService.getCurrentAppUser();
+        status.ifPresent(value -> value.setLiked(likedByCurrentUser(value.getLikeList(), appUser.getId())));
+        return status;
     }
 
     @Override
     public Status save(Status status) {
-        return statusRepository.save(status);
+        Status statusSave = statusRepository.save(status);
+        AppUser appUser = appUserService.getCurrentAppUser();
+        statusSave.setLiked(likedByCurrentUser(statusSave.getLikeList(),appUser.getId()));
+        return statusSave;
     }
 
     @Override
@@ -44,33 +59,13 @@ public class StatusServiceImpl implements StatusService {
     }
 
     @Override
-    public Iterable<Status> findAllByAuthorId(Long id) {
-        return statusRepository.findAllByAuthorId(id);
-    }
-
-    @Override
-    public Iterable<Status> findAllByAuthorIdAndIsDeleted(Long authorId, boolean isDeleted) {
-        return statusRepository.findAllByAuthorIdAndIsDeleted(authorId, isDeleted);
-    }
-
-    @Override
-    public Iterable<Status> findAllByAuthorId(Long authorId, Sort sort) {
-        AppUser appUser = appUserService.getCurrentAppUser();
-        Iterable<Status> statuses = statusRepository.findAllByAuthorIdAndIsDeleted(authorId, false, sort);
+    public Iterable<Status> findAllByAuthor(AppUser author, AppUser currentUser) {
+        List<PrivacyLevel> privacyLevels = getPrivacyLevel(author, currentUser);
+        Iterable<Status> statuses = statusRepository.findAllByAuthor(author, privacyLevels);
         for (Status status : statuses) {
-            status.setLiked(likedByCurrentUser(status.getLikeList(),appUser.getId()));
+            status.setLiked(likedByCurrentUser(status.getLikeList(),currentUser.getId()));
         }
         return statuses;
-    }
-
-    @Override
-    public Iterable<Status> findAllByAuthorIdAndPrivacy(Long authorId, List<PrivacyLevel> privacyLevels, Sort sort) {
-        return statusRepository.findAllByAuthorIdAndIsDeletedAndPrivacyLevelIn(authorId, false, privacyLevels, sort);
-    }
-
-    @Override
-    public Iterable<Status> findAllByAuthorIdAndIsDeletedAndBodyContaining(Long authorId, boolean isDeleted, String query) {
-        return statusRepository.findAllByAuthorIdAndIsDeletedAndBodyContaining(authorId, isDeleted, query);
     }
 
     @Override
@@ -100,4 +95,18 @@ public class StatusServiceImpl implements StatusService {
         }
         return false;
     }
+    private List<PrivacyLevel> getPrivacyLevel(AppUser author, AppUser currentUser) {
+        List<PrivacyLevel> privacyLevels = new ArrayList<>();
+        if(Objects.equals(currentUser.getId(), author.getId())) {
+            privacyLevels.add(PrivacyLevel.PRIVATE);
+            privacyLevels.add(PrivacyLevel.FRIENDS);
+        }else {
+            if (friendService.checkFriend(currentUser, author)){
+                privacyLevels.add(PrivacyLevel.FRIENDS);
+            }
+        }
+        privacyLevels.add(PrivacyLevel.PUBLIC);
+        return privacyLevels;
+    }
+
 }
