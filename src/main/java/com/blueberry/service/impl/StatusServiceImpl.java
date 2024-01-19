@@ -39,7 +39,7 @@ public class StatusServiceImpl implements StatusService {
     }
     @Override
     public Optional<Status> findByIdAndDeleted(Long id,boolean deleted) {
-        Optional<Status> status= statusRepository.findByIdAndDeleted(id,deleted);
+        Optional<Status> status= statusRepository.findByIdAndIsDeleted(id,deleted);
         AppUser appUser = appUserService.getCurrentAppUser();
         status.ifPresent(value -> value.setLiked(likedByCurrentUser(value.getLikeList(), appUser.getId())));
         return status;

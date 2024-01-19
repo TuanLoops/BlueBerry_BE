@@ -3,7 +3,6 @@ package com.blueberry.repository;
 import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.PrivacyLevel;
 import com.blueberry.model.app.Status;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface StatusRepository extends JpaRepository<Status, Long> {
-    Optional<Status> findByIdAndDeleted(Long id,boolean deleted);
+    Optional<Status> findByIdAndIsDeleted(Long id,boolean deleted);
     @Query("SELECT s FROM Status s " +
             "    WHERE ((s.author = :author AND s.privacyLevel != 'PRIVATE' )OR (s.author IN :friendList AND s.privacyLevel = 'FRIENDS')" +
             "       OR s.privacyLevel='PUBLIC' ) AND s.isDeleted = false ORDER BY s.lastActivity DESC")
