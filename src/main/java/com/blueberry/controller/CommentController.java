@@ -80,7 +80,7 @@ public class CommentController {
                 currentComment.setBody(StringTrimmer.trim(updatedComment.getBody()));
                 currentComment.setUpdatedAt(LocalDateTime.now());
                 currentComment.setUpdated(true);
-
+                currentComment.setImage(updatedComment.getImage());
                 Comment savedComment = commentService.save(currentComment);
 
                 return new ResponseEntity<>(modelMapperUtil.map(savedComment,CommentDTO.class), HttpStatus.OK);
@@ -101,8 +101,8 @@ public class CommentController {
         }
         AppUser currentAppUser = appUserService.getCurrentAppUser();
         if (Objects.equals(currentAppUser.getId(), currentComment.getAuthor().getId())) {
-            commentService.delete(commentId);
-
+            currentComment.setDeleted(true);
+            commentService.save(currentComment);
             return new ResponseEntity<>(commentId, HttpStatus.OK);
         }
         return new ResponseEntity<>(new MessageResponse("Access denied !!"), HttpStatus.FORBIDDEN);
