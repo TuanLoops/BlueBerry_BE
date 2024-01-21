@@ -5,10 +5,7 @@ import com.blueberry.model.app.*;
 import com.blueberry.model.dto.MessageResponse;
 import com.blueberry.model.dto.StatusDTO;
 import com.blueberry.model.request.StatusRequest;
-import com.blueberry.service.AppUserService;
-import com.blueberry.service.LikeService;
-import com.blueberry.service.StatusService;
-import com.blueberry.service.UserService;
+import com.blueberry.service.*;
 import com.blueberry.service.impl.FriendService;
 import com.blueberry.util.ModelMapperUtil;
 import com.blueberry.util.StringTrimmer;
@@ -37,6 +34,7 @@ public class StatusController {
     private ModelMapperUtil modelMapperUtil;
     private LikeService likeService;
     private FriendService friendService;
+    private FollowService followService;
     private final Sort SORT_BY_TIME_DESC = Sort.by(Sort.Direction.DESC, "lastActivity");
 
     @GetMapping("/{id}")
@@ -73,11 +71,11 @@ public class StatusController {
         status.setAuthor(appUser);
         status.setCreatedAt(LocalDateTime.now());
         status.setLastActivity(LocalDateTime.now());
-        status.setBody(statusRequest.getBody());
-        status.setBody(StringTrimmer.trim(status.getBody()));
+        status.setBody(StringTrimmer.trim(statusRequest.getBody()));
         status.setImageList(statusRequest.getImageList());
         status.setCommentList(new ArrayList<>());
         status.setLikeList(new ArrayList<>());
+
         try {
             if (statusRequest.getPrivacyLevel() != null) {
                 status.setPrivacyLevel(statusRequest.getPrivacyLevel());
@@ -85,6 +83,10 @@ public class StatusController {
                 status.setPrivacyLevel(PrivacyLevel.PUBLIC);
             }
             status = statusService.save(status);
+            Follow follow = new Follow();
+            follow.setStatus(status);
+            follow.setFollowers(new ArrayList<>());
+            followService.save(follow);
             return new ResponseEntity<>(modelMapperUtil.map(status, StatusDTO.class), HttpStatus.OK);
         } catch (RollbackException e) {
             return new ResponseEntity<>(new MessageResponse("Post failure status !!"),HttpStatus.BAD_REQUEST);

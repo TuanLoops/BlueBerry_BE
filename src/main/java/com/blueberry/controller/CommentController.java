@@ -1,15 +1,10 @@
 package com.blueberry.controller;
 
-import com.blueberry.model.app.AppUser;
-import com.blueberry.model.app.Comment;
-import com.blueberry.model.app.Like;
-import com.blueberry.model.app.Status;
+import com.blueberry.model.app.*;
 import com.blueberry.model.dto.CommentDTO;
 import com.blueberry.model.dto.MessageResponse;
-import com.blueberry.service.AppUserService;
-import com.blueberry.service.CommentService;
-import com.blueberry.service.StatusService;
-import com.blueberry.service.UserService;
+import com.blueberry.service.*;
+import com.blueberry.service.impl.FollowServiceImpl;
 import com.blueberry.util.ModelMapperUtil;
 import com.blueberry.util.StringTrimmer;
 import lombok.AllArgsConstructor;
@@ -17,12 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth/api/status")
@@ -32,9 +25,10 @@ public class CommentController {
 
     private CommentService commentService;
     private StatusService statusService;
-    private UserService userService;
     private AppUserService appUserService;
     private ModelMapperUtil modelMapperUtil;
+    private NotificationService notificationService;
+    private FollowService followService;
 
     @GetMapping("/{statusId}/comments")
     public ResponseEntity<List<CommentDTO>> findAllByStatusId(@PathVariable Long statusId) {
@@ -64,6 +58,16 @@ public class CommentController {
         status.getCommentList().add(savedComment);
         status.setLastActivity(LocalDateTime.now());
         statusService.save(status);
+        followService.followStatus(currentAppUser, status);
+
+        notificationService.saveNotification(currentAppUser, status.getAuthor(), NotificationType.COMMENT_ON_OWN_POST);
+        List<AppUser> followers = followService.findByStatus(status).getFollowers();
+        for (AppUser follower: followers) {
+            if (!Objects.equals(follower.getId(), currentAppUser.getId())) {
+            notificationService.saveNotification(currentAppUser, follower, NotificationType.COMMENT_ON_FOLLOWED_POST);
+            }
+        }
+
 
         return new ResponseEntity<>(modelMapperUtil.map(savedComment,CommentDTO.class), HttpStatus.CREATED);
     }
