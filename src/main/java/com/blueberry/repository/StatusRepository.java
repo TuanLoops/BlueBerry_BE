@@ -29,4 +29,8 @@ public interface StatusRepository extends JpaRepository<Status, Long> {
             "    WHERE s.author = :author AND s.privacyLevel IN :privacy AND s.isDeleted = false " +
             "    ORDER BY s.lastActivity DESC")
     Iterable<Status> findAllByAuthor(@Param("author") AppUser author, @Param("privacy") List<PrivacyLevel> privacyLevels);
+    @Query("SELECT s FROM Status s " +
+            "    WHERE s.author = :author AND s.privacyLevel IN :privacy AND s.isDeleted = false " +
+            "    AND LOWER(s.body) LIKE LOWER(concat('%',:body,'%')) ORDER BY s.lastActivity DESC")
+    Iterable<Status> findAllByAuthorAndBodyContaining(@Param("author") AppUser author, @Param("privacy") List<PrivacyLevel> privacyLevels,@Param("body") String body);
 }
