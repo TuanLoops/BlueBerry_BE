@@ -5,24 +5,22 @@ import com.blueberry.model.dto.AppUserDTO;
 import com.blueberry.model.dto.NotificationDTO;
 import com.blueberry.util.ModelMapperUtil;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
-@AllArgsConstructor
 public class NotificationDTOConverter implements Converter<Notification, NotificationDTO> {
-    private ModelMapperUtil modelMapper;
 
     public NotificationDTO convert(MappingContext<Notification, NotificationDTO> mappingContext) {
         Notification notification = mappingContext.getSource();
         NotificationDTO notificationDTO = new NotificationDTO();
         notificationDTO.setId(notification.getId());
         notificationDTO.setType(notification.getType());
-        notificationDTO.setSender(modelMapper.map(notification.getSender(), AppUserDTO.class));
-        notificationDTO.setReceiver(modelMapper.map(notification.getReceiver(), AppUserDTO.class));
+        notificationDTO.setSender(AppUserDTOConverter.converter(notification.getSender()));
+        notificationDTO.setReceiver(AppUserDTOConverter.converter(notification.getReceiver()));
         if (notification.getStatus() != null) {
             notificationDTO.setStatusId(notification.getStatus().getId());
-            notificationDTO.setStatusAuthorName(modelMapper.map(notification.getStatus().getAuthor(),
-                    AppUserDTO.class).getFullName());
+            notificationDTO.setStatusAuthorName(notification.getStatus().getAuthor().getFirstName()+' '+notification.getStatus().getAuthor().getLastName());
         }
         notificationDTO.setTimeStamp(notification.getTimeStamp());
         notificationDTO.setIsRead(notification.getIsRead());
