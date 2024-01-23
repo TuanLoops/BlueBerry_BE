@@ -109,4 +109,13 @@ public class UserController {
         return new ResponseEntity<>(new MessageResponse("Old password is not correct !!"), HttpStatus.FORBIDDEN);
     }
 
+    @GetMapping("reset-password")
+    private ResponseEntity<?> resetPassword(@RequestParam String email){
+        if (email == null) {
+            return new ResponseEntity<>(new MessageResponse("Please enter your email !!"), HttpStatus.BAD_REQUEST);
+        }
+        String result = userService.sendEmail(email);
+        return new ResponseEntity<>(new MessageResponse("OK"),HttpStatus.OK);
+    }
+
 }

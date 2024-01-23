@@ -3,9 +3,15 @@ package com.blueberry.service.impl;
 
 import com.blueberry.model.acc.User;
 import com.blueberry.model.acc.UserPrinciple;
+import com.blueberry.model.app.AppUser;
+import com.blueberry.model.dto.MessageResponse;
+import com.blueberry.repository.AppUserRepository;
 import com.blueberry.repository.UserRepository;
+import com.blueberry.service.AppUserService;
 import com.blueberry.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,6 +26,13 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private AppUserRepository appUserRepository;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private JwtService jwtService;
+    private final Long EXPIRE_TIME = 86400000L;
 
     @Override
     @Transactional
@@ -110,5 +123,36 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
+    @Override
+    public String sendEmail(String email) {
+        Optional<User> user = this.findByEmail(email);
+        if (user.isPresent()) {
+            AppUser appUser = appUserRepository.findByUser(user.get()).get();
+            String token = jwtService.generateEmailToken(email, EXPIRE_TIME);
+            String fullName = appUser.getFirstName()+" "+appUser.getLastName();
+            emailService.send(email,"Blueberry - Password Reset Request", buildMail(fullName, "http://localhost:5173/reset-password?token=" + token));
+            return "Success";
+        }
+        return "Failure";
+    }
 
+    private String buildMail(String name, String link) {
+        return "<div style=\"font-family: Arial, sans-serif; background-color: #f2f2f2; padding: 20px;\">" +
+                "    <div style=\"background-color: #ffffff; max-width: 600px; margin: 0 auto; padding: 20px; border-radius: 5px;\">" +
+                "        <h2 style=\"color: #007BFF;\">Password Reset Request</h2>" +
+                "        <p>Dear <strong>"+name+"</strong>,</p>" +
+                "        <p>We recently received a request to reset the password for your account. To ensure the security of your account, please follow the instructions below to set a new password:</p>" +
+                "        <p>Click on the following link to access the password reset page:</p>" +
+                "        <p>" +
+                "            <a href="+link+" style=\"background-color: #007BFF; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px; display: inline-block;\">" +
+                "                Change password" +
+                "            </a>" +
+                "        </p>\n" +
+                "        <p>If you did not request a password reset, please disregard this email. Your account security is important to us, and we take every measure to protect it.</p>" +
+                "        <p>Thank you for your prompt attention to this matter.</p>" +
+                "        <p>Best regards,</p>" +
+                "        <p style=\"color: #007BFF; font-weight: bold;\">Blueberry</p>" +
+                "    </div>" +
+                "</div>";
+    }
 }
