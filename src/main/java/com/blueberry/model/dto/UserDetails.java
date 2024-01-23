@@ -11,7 +11,7 @@ public class UserDetails {
         private String lastName;
         private String fullName;
         private LocalDate dob;
-        private int phoneNumber;
+        private String phoneNumber;
         private String avatarImage;
         private String bannerImage;
         private String hobbies;

@@ -25,6 +25,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -62,7 +63,17 @@ public class UserController {
         }
     }
 
-
+//    @PostMapping("/login/google")
+//    public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> googleLoginData) {
+//    try
+//    {
+//
+//    }
+//    catch ()
+//    {
+//
+//    }
+//    }
 
     @PostMapping("/logout")
     public ResponseEntity<MessageResponse> logout(HttpServletRequest request) {
