@@ -7,7 +7,6 @@ import com.blueberry.model.app.Status;
 import com.blueberry.repository.NotificationRepository;
 import com.blueberry.service.NotificationService;
 import lombok.AllArgsConstructor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
