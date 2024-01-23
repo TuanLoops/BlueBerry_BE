@@ -1,14 +1,13 @@
 package com.blueberry.service.impl;
 
-import com.blueberry.model.app.AppUser;
-import com.blueberry.model.app.Comment;
-import com.blueberry.model.app.CommentLike;
-import com.blueberry.model.app.Like;
+import com.blueberry.model.app.*;
 import com.blueberry.model.dto.MessageResponse;
 import com.blueberry.repository.CommentLikeRepository;
 import com.blueberry.repository.CommentRepository;
 import com.blueberry.service.AppUserService;
 import com.blueberry.service.CommentService;
+import com.blueberry.service.NotificationService;
+import com.blueberry.service.StatusService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -26,6 +25,8 @@ public class CommentServiceImpl implements CommentService {
     private CommentRepository commentRepository;
     private AppUserService appUserService;
     private CommentLikeRepository commentLikeRepository;
+    private NotificationService notificationService;
+    private StatusService statusService;
     private final Sort SORT_BY_TIME_DESC = Sort.by(Sort.Direction.DESC, "createdAt");
 
     @Override
@@ -38,7 +39,7 @@ public class CommentServiceImpl implements CommentService {
         AppUser appUser = appUserService.getCurrentAppUser();
         Optional<Comment> comment = commentRepository.findById(id);
         if (comment.isPresent()) {
-            comment.get().setLiked(isLiked(comment.get().getLikes(),appUser.getId()));
+            comment.get().setLiked(isLiked(comment.get().getLikes(), appUser.getId()));
         }
         return comment;
     }
@@ -60,10 +61,11 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Iterable<Comment> findAllByStatusIdAndIsDeleted(Long statusId, Boolean deleted) {
-        Iterable<Comment> comments = commentRepository.findAllByStatusIdAndIsDeleted(statusId,deleted,SORT_BY_TIME_DESC);
+        Iterable<Comment> comments = commentRepository.findAllByStatusIdAndIsDeleted(statusId, deleted,
+                SORT_BY_TIME_DESC);
         AppUser appUser = appUserService.getCurrentAppUser();
         for (Comment comment : comments) {
-            comment.setLiked(isLiked(comment.getLikes(),appUser.getId()));
+            comment.setLiked(isLiked(comment.getLikes(), appUser.getId()));
         }
         return comments;
     }
@@ -71,27 +73,33 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public ResponseEntity<?> likeComment(Long commentId) {
         AppUser currentUser = appUserService.getCurrentAppUser();
-        Optional<CommentLike> commentLike=  commentLikeRepository.findByAuthorIdAndCommentId(currentUser.getId(),commentId);
+        Optional<CommentLike> commentLike = commentLikeRepository.findByAuthorIdAndCommentId(currentUser.getId(),
+                commentId);
         try {
-            if(commentLike.isPresent()){
+            if (commentLike.isPresent()) {
                 commentLikeRepository.delete(commentLike.get());
-                return new ResponseEntity<>(-1,HttpStatus.OK);
-            }else{
+                return new ResponseEntity<>(-1, HttpStatus.OK);
+            } else {
                 CommentLike commentLikeNew = new CommentLike();
                 commentLikeNew.setCommentId(commentId);
                 commentLikeNew.setAuthorId(currentUser.getId());
                 commentLikeRepository.save(commentLikeNew);
+                AppUser commentAuthor = commentRepository.findById(commentId).get().getAuthor();
+                if (!commentAuthor.getId().equals(currentUser.getId())) {
+                    notificationService.saveNotification(currentUser, commentAuthor, NotificationType.LIKE_ON_COMMENT
+                            , statusService.findById(commentId).get());
+                }
                 return new ResponseEntity<>(1, HttpStatus.OK);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
-            return new ResponseEntity<>(new MessageResponse("Error can not save !!"),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new MessageResponse("Error can not save !!"), HttpStatus.BAD_REQUEST);
         }
     }
 
     private boolean isLiked(List<CommentLike> likes, Long userId) {
-        for (CommentLike like: likes){
-            if (Objects.equals( like.getAuthorId(),userId)){
+        for (CommentLike like : likes) {
+            if (Objects.equals(like.getAuthorId(), userId)) {
                 return true;
             }
         }

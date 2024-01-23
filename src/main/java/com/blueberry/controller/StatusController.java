@@ -5,10 +5,7 @@ import com.blueberry.model.app.*;
 import com.blueberry.model.dto.MessageResponse;
 import com.blueberry.model.dto.StatusDTO;
 import com.blueberry.model.request.StatusRequest;
-import com.blueberry.service.AppUserService;
-import com.blueberry.service.LikeService;
-import com.blueberry.service.StatusService;
-import com.blueberry.service.UserService;
+import com.blueberry.service.*;
 import com.blueberry.service.impl.FriendService;
 import com.blueberry.util.ModelMapperUtil;
 import com.blueberry.util.StringTrimmer;
@@ -37,10 +34,13 @@ public class StatusController {
     private ModelMapperUtil modelMapperUtil;
     private LikeService likeService;
     private FriendService friendService;
+    private FollowService followService;
+    private NotificationService notificationService;
+    private final Sort SORT_BY_TIME_DESC = Sort.by(Sort.Direction.DESC, "lastActivity");
 
     @GetMapping("/{id}")
     public ResponseEntity<StatusDTO> findStatusById(@PathVariable Long id) {
-        Optional<Status> status = statusService.findByIdAndDeleted(id,false);
+        Optional<Status> status = statusService.findByIdAndDeleted(id, false);
         if (status.isPresent()) {
             return new ResponseEntity<>(modelMapperUtil.map(status, StatusDTO.class), HttpStatus.OK);
         } else {
@@ -52,7 +52,7 @@ public class StatusController {
     public ResponseEntity<List<StatusDTO>> getAllStatusByBodyContaining(@RequestParam("query") String query) {
         AppUser appUser = appUserService.getCurrentAppUser();
         List<AppUser> friendList = friendService.getFriendList(appUser.getId());
-        List<Status> statuses = (List<Status>) statusService.findStatusByNameContaining(appUser,friendList,query);
+        List<Status> statuses = (List<Status>) statusService.findStatusByNameContaining(appUser, friendList, query);
         return new ResponseEntity<>(modelMapperUtil.mapList(statuses, StatusDTO.class), HttpStatus.OK);
     }
 
@@ -63,11 +63,11 @@ public class StatusController {
         status.setAuthor(appUser);
         status.setCreatedAt(LocalDateTime.now());
         status.setLastActivity(LocalDateTime.now());
-        status.setBody(statusRequest.getBody());
-        status.setBody(StringTrimmer.trim(status.getBody()));
+        status.setBody(StringTrimmer.trim(statusRequest.getBody()));
         status.setImageList(statusRequest.getImageList());
         status.setCommentList(new ArrayList<>());
         status.setLikeList(new ArrayList<>());
+
         try {
             if (statusRequest.getPrivacyLevel() != null) {
                 status.setPrivacyLevel(statusRequest.getPrivacyLevel());
@@ -75,9 +75,13 @@ public class StatusController {
                 status.setPrivacyLevel(PrivacyLevel.PUBLIC);
             }
             status = statusService.save(status);
+            Follow follow = new Follow();
+            follow.setStatus(status);
+            follow.setFollowers(new ArrayList<>());
+            followService.save(follow);
             return new ResponseEntity<>(modelMapperUtil.map(status, StatusDTO.class), HttpStatus.OK);
         } catch (RollbackException e) {
-            return new ResponseEntity<>(new MessageResponse("Post failure status !!"),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new MessageResponse("Post failure status !!"), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -98,10 +102,10 @@ public class StatusController {
                 Status savedStatus = statusService.save(optionalStatus.get());
                 return new ResponseEntity<>(modelMapperUtil.map(savedStatus, StatusDTO.class), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(new MessageResponse("Access denied !!"),HttpStatus.FORBIDDEN);
+                return new ResponseEntity<>(new MessageResponse("Access denied !!"), HttpStatus.FORBIDDEN);
             }
         } else {
-            return new ResponseEntity<>(new MessageResponse("Not found !!"),HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new MessageResponse("Not found !!"), HttpStatus.NOT_FOUND);
         }
     }
 
@@ -114,12 +118,12 @@ public class StatusController {
             if (currentUsername.equals(status.get().getAuthor().getUser().getEmail())) {
                 status.get().setDeleted(true);
                 statusService.save(status.get());
-                return new ResponseEntity<>(id,HttpStatus.OK);
+                return new ResponseEntity<>(id, HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(new MessageResponse("Access denied !!"),HttpStatus.FORBIDDEN);
+                return new ResponseEntity<>(new MessageResponse("Access denied !!"), HttpStatus.FORBIDDEN);
             }
         } else {
-            return new ResponseEntity<>(new MessageResponse("Delete failed !!"),HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new MessageResponse("Delete failed !!"), HttpStatus.NOT_FOUND);
         }
     }
 
@@ -131,11 +135,11 @@ public class StatusController {
             if (Objects.equals(currentUser.getId(), optionalStatus.get().getAuthor().getId())) {
                 optionalStatus.get().setPrivacyLevel(statusRequest.getPrivacyLevel());
                 statusService.save(optionalStatus.get());
-                return new ResponseEntity<>(new MessageResponse("Change Successfully !!"),HttpStatus.OK);
+                return new ResponseEntity<>(new MessageResponse("Change Successfully !!"), HttpStatus.OK);
             }
-            return new ResponseEntity<>(new MessageResponse("Access denied !!"),HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new MessageResponse("Access denied !!"), HttpStatus.FORBIDDEN);
         }
-        return new ResponseEntity<>(new MessageResponse("Not Found !!"),HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new MessageResponse("Not Found !!"), HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/users/{id}")
@@ -143,7 +147,7 @@ public class StatusController {
         AppUser currentUser = appUserService.getCurrentAppUser();
         AppUser appUser = appUserService.findById(id).get();
 
-        List<Status> statuses = (List<Status>) statusService.findAllByAuthor(appUser,currentUser);
+        List<Status> statuses = (List<Status>) statusService.findAllByAuthor(appUser, currentUser);
         if (statuses.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
@@ -151,7 +155,7 @@ public class StatusController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<StatusDTO>> findAllStatus(){
+    public ResponseEntity<List<StatusDTO>> findAllStatus() {
         AppUser appUser = appUserService.getCurrentAppUser();
         List<AppUser> friendList = friendService.getFriendList(appUser.getId());
         List<Status> statuses = (List<Status>) statusService.findAllByPrivacy(appUser, friendList);
@@ -159,19 +163,24 @@ public class StatusController {
     }
 
     @PostMapping("/{id}/like")
-    public ResponseEntity<?> likeStatus(@PathVariable Long id){
+    public ResponseEntity<?> likeStatus(@PathVariable Long id) {
         AppUser appUser = appUserService.getCurrentAppUser();
-        Optional<Like> liked=  likeService.findByStatusIdAndAuthorId(id,appUser.getId());
+        Optional<Like> liked = likeService.findByStatusIdAndAuthorId(id, appUser.getId());
         try {
-            if(liked.isPresent()){
+            if (liked.isPresent()) {
                 likeService.deleteLike(liked.get());
-                return new ResponseEntity<>( -1,HttpStatus.OK);
-            }else{
-                Like newLike= new Like(appUser.getId(),id);
+                return new ResponseEntity<>(-1, HttpStatus.OK);
+            } else {
+                Like newLike = new Like(appUser.getId(), id);
                 likeService.save(newLike);
-                return new ResponseEntity<>(1,HttpStatus.OK);
+                AppUser statusAuthor = statusService.findById(id).get().getAuthor();
+                if (!statusAuthor.getId().equals(appUser.getId())) {
+                    notificationService.saveNotification(appUser, statusAuthor,
+                            NotificationType.LIKE_ON_POST, statusService.findById(id).get());
+                }
+                return new ResponseEntity<>(1, HttpStatus.OK);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
