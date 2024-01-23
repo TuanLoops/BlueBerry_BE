@@ -39,7 +39,6 @@ public class FriendController {
     public ResponseEntity<List<AppUserDTO>> getCurrentUserFriendList() {
         AppUser currentUser = appUserService.getCurrentAppUser();
         List<AppUser> friendList = friendService.getCurrentUserFriendList(currentUser);
-        System.out.println(friendList);
         return new ResponseEntity<>(modelMapper.mapList(friendList,
                 AppUserDTO.class), HttpStatus.OK);
     }
@@ -65,15 +64,15 @@ public class FriendController {
         AppUser sender = appUserService.getCurrentAppUser();
         if (Objects.equals(sender.getId(), receiverId))
             return new ResponseEntity<>("Add friend with self not allowed", HttpStatus.BAD_REQUEST);
-        AppUser receiver = appUserService.findById(receiverId).orElseThrow(() -> new EntityNotFoundException(
-                "Receiver not found"));
-        if (friendService.checkFriend(sender, receiver)) {
+        Optional<AppUser> receiver = appUserService.findById(receiverId);
+        if (receiver.isEmpty())
+            return new ResponseEntity<>("Receiver not found", HttpStatus.BAD_REQUEST);
+        if (friendService.checkFriend(sender, receiver.get()))
             return new ResponseEntity<>("Already friend", HttpStatus.CONFLICT);
-        }
         Optional<FriendRequest> request = friendService.findTopBySenderAndReceiverOrderByCreateAtDesc(sender,
-                receiver);
+                receiver.get());
         if (request.isEmpty() || !request.get().getStatus().equals(FriendRequestStatus.PENDING)) {
-            FriendRequest friendRequest = friendService.sendFriendRequest(sender, receiver);
+            FriendRequest friendRequest = friendService.sendFriendRequest(sender, receiver.get());
             return new ResponseEntity<>(modelMapper.map(friendRequest, FriendRequestDTO.class), HttpStatus.OK);
         } else return new ResponseEntity<>("Pending friend request already exist", HttpStatus.CONFLICT);
     }

@@ -1,12 +1,10 @@
 package com.blueberry.service.impl;
 
-import com.blueberry.model.app.AppUser;
-import com.blueberry.model.app.FriendRequest;
-import com.blueberry.model.app.FriendRequestStatus;
-import com.blueberry.model.app.Friendship;
+import com.blueberry.model.app.*;
 import com.blueberry.repository.AppUserRepository;
 import com.blueberry.repository.FriendRequestRepository;
 import com.blueberry.repository.FriendshipRepository;
+import com.blueberry.service.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +23,8 @@ public class FriendService {
     private FriendRequestRepository friendRequestRepository;
 
     private AppUserRepository appUserRepository;
+
+    private NotificationService notificationService;
 
     public List<AppUser> getFriendList(Long userId) {
         AppUser user = appUserRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not " +
@@ -62,6 +62,7 @@ public class FriendService {
         friendRequest.setReceiver(receiver);
         friendRequest.setCreateAt(LocalDateTime.now());
         friendRequest.setStatus(FriendRequestStatus.PENDING);
+        notificationService.saveNotification(sender, receiver, NotificationType.FRIEND_REQUEST_INCOMING);
         return friendRequestRepository.save(friendRequest);
     }
 
@@ -77,8 +78,16 @@ public class FriendService {
             throw new IllegalStateException("Friend request is no longer pending.");
         }
 
-        if (status.equals(FriendRequestStatus.ACCEPTED)) {
-            establishFriendship(friendRequest.getSender(), friendRequest.getReceiver());
+        switch (status) {
+            case ACCEPTED -> {
+                establishFriendship(friendRequest.getSender(), friendRequest.getReceiver());
+                notificationService.saveNotification(friendRequest.getReceiver(), friendRequest.getSender(),
+                        NotificationType.FRIEND_REQUEST_ACCEPT);
+            }
+            case DECLINED -> {
+                notificationService.saveNotification(friendRequest.getReceiver(), friendRequest.getSender(),
+                        NotificationType.FRIEND_REQUEST_DECLINE);
+            }
         }
 
         friendRequest.setStatus(status);
