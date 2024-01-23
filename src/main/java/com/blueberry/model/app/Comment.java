@@ -45,7 +45,7 @@ public class Comment {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "comment_id")
     private List<CommentLike> likes;
-    
+
     @Transient
     private boolean liked;
 
