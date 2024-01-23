@@ -19,6 +19,9 @@ public class Notification {
     private NotificationType type;
 
     @ManyToOne
+    private Status status;
+
+    @ManyToOne
     @JoinColumn(name = "sender_id")
     private AppUser sender;
 

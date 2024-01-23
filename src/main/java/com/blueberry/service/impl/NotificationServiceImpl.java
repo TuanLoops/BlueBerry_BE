@@ -3,6 +3,7 @@ package com.blueberry.service.impl;
 import com.blueberry.model.app.AppUser;
 import com.blueberry.model.app.Notification;
 import com.blueberry.model.app.NotificationType;
+import com.blueberry.model.app.Status;
 import com.blueberry.repository.NotificationRepository;
 import com.blueberry.service.NotificationService;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,21 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
 
     private NotificationRepository notificationRepository;
-//    private final SimpMessagingTemplate messagingTemplate;
+    private FirestoreService firestoreService;
+
+    public Notification saveNotification(AppUser sender, AppUser receiver, NotificationType type, Status status) {
+        Notification notification = new Notification();
+        notification.setSender(sender);
+        notification.setReceiver(receiver);
+        notification.setStatus(status);
+        notification.setType(type);
+        notification.setTimeStamp(LocalDateTime.now());
+        notification.setIsRead(false);
+        Notification savedNotification = notificationRepository.save(notification);
+
+        sendNotification(String.valueOf(receiver.getId()), savedNotification);
+        return savedNotification;
+    }
 
     public Notification saveNotification(AppUser sender, AppUser receiver, NotificationType type) {
         Notification notification = new Notification();
@@ -26,15 +41,18 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setType(type);
         notification.setTimeStamp(LocalDateTime.now());
         notification.setIsRead(false);
-        return notificationRepository.save(notification);
+        Notification savedNotification = notificationRepository.save(notification);
+
+        sendNotification(String.valueOf(receiver.getId()), savedNotification);
+        return savedNotification;
     }
 
     public List<Notification> getNotificationsForUser(AppUser receiver) {
-        return notificationRepository.findByReceiver(receiver);
+        return notificationRepository.findByReceiverOrderByTimeStampDesc(receiver);
     }
 
 
-//    public void sendNotification(String username, Notification notification) {
-//        messagingTemplate.convertAndSendToUser(username, "/topic/notifications", notification);
-//    }
+    public void sendNotification(String userId, Notification notification) {
+        firestoreService.saveNotification(notification);
+    }
 }

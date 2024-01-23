@@ -58,13 +58,14 @@ public class CommentController {
         status.getCommentList().add(savedComment);
         status.setLastActivity(LocalDateTime.now());
         statusService.save(status);
-        followService.followStatus(currentAppUser, status);
-
-        notificationService.saveNotification(currentAppUser, status.getAuthor(), NotificationType.COMMENT_ON_OWN_POST);
+        if (!currentAppUser.getId().equals(status.getAuthor().getId())) {
+            followService.followStatus(currentAppUser, status);
+            notificationService.saveNotification(currentAppUser, status.getAuthor(), NotificationType.COMMENT_ON_OWN_POST, status);
+        }
         List<AppUser> followers = followService.findByStatus(status).getFollowers();
         for (AppUser follower: followers) {
             if (!Objects.equals(follower.getId(), currentAppUser.getId())) {
-            notificationService.saveNotification(currentAppUser, follower, NotificationType.COMMENT_ON_FOLLOWED_POST);
+            notificationService.saveNotification(currentAppUser, follower, NotificationType.COMMENT_ON_FOLLOWED_POST, status);
             }
         }
 
@@ -84,7 +85,7 @@ public class CommentController {
                 currentComment.setBody(StringTrimmer.trim(updatedComment.getBody()));
                 currentComment.setUpdatedAt(LocalDateTime.now());
                 currentComment.setUpdated(true);
-
+                currentComment.setImage(updatedComment.getImage());
                 Comment savedComment = commentService.save(currentComment);
 
                 return new ResponseEntity<>(modelMapperUtil.map(savedComment,CommentDTO.class), HttpStatus.OK);
@@ -105,8 +106,8 @@ public class CommentController {
         }
         AppUser currentAppUser = appUserService.getCurrentAppUser();
         if (Objects.equals(currentAppUser.getId(), currentComment.getAuthor().getId())) {
-            commentService.delete(commentId);
-
+            currentComment.setDeleted(true);
+            commentService.save(currentComment);
             return new ResponseEntity<>(commentId, HttpStatus.OK);
         }
         return new ResponseEntity<>(new MessageResponse("Access denied !!"), HttpStatus.FORBIDDEN);

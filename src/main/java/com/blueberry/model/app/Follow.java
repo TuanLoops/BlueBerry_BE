@@ -18,7 +18,6 @@ public class Follow {
     private Long id;
 
     @OneToOne
-    @Column(name="status_id", nullable = false, unique = true)
     private Status status;
 
     @ManyToMany

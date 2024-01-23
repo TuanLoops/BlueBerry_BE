@@ -76,8 +76,8 @@ public class SecurityConfig {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/api/users/login", "/auth/api/users/register", "/auth/api/users/register/confirm","/auth/api/users/resend-email", "/hello/**").permitAll()
-                        .requestMatchers("/auth/api/users/**","/auth/api/appusers/**","/auth/api/status/**", "/auth/api/friend/**").hasAnyAuthority("ROLE_USER")
+                        .requestMatchers("/auth/api/users/login", "/auth/api/users/register", "/auth/api/users/register/confirm","/auth/api/users/resend-email").permitAll()
+                        .requestMatchers("/auth/api/users/**","/auth/api/appusers/**","/auth/api/status/**", "/auth/api/friend/**", "/auth/api/notification/**").hasAnyAuthority("ROLE_USER")
                         .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN")
                 )
                 .exceptionHandling(customizer -> customizer.accessDeniedHandler(customAccessDeniedHandler()))

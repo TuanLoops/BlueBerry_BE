@@ -39,7 +39,6 @@ public class FriendController {
     public ResponseEntity<List<AppUserDTO>> getCurrentUserFriendList() {
         AppUser currentUser = appUserService.getCurrentAppUser();
         List<AppUser> friendList = friendService.getCurrentUserFriendList(currentUser);
-        System.out.println(friendList);
         return new ResponseEntity<>(modelMapper.mapList(friendList,
                 AppUserDTO.class), HttpStatus.OK);
     }
