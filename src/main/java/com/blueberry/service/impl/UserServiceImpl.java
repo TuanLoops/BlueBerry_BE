@@ -132,15 +132,15 @@ public class UserServiceImpl implements UserService {
         Optional<User> user = this.findByEmail(email);
         if (user.isPresent()) {
             AppUser appUser = appUserRepository.findByUser(user.get()).get();
-            Token  token = tokenStore.getTokenByEmail(email,false);
+            Token token = tokenStore.getTokenByEmail(email, false);
             String jwt = jwtService.generateEmailToken(email, EXPIRE_TIME);
-            if(token!=null) {
+            if (token != null) {
                 token.setToken(jwt);
-            }else {
+            } else {
                 tokenStore.storeToken(new Token(jwt, email, false));
             }
-            String fullName = appUser.getFirstName()+" "+appUser.getLastName();
-            emailService.send(email,"Blueberry - Password Reset Request", buildMail(fullName, "http://localhost:5173/reset-password?token=" + jwt));
+            String fullName = appUser.getFirstName() + " " + appUser.getLastName();
+            emailService.send(email, "Blueberry - Password Reset Request", buildMail(fullName, "http://localhost:5173/reset-password?token=" + jwt));
             return "Success";
         }
         return "Failure";
@@ -156,20 +156,19 @@ public class UserServiceImpl implements UserService {
             Optional<User> user = userRepository.findByEmail(email);
             tokenStore.removeToken(token);
             if (user.isPresent()) {
-                if (userRequest.getPassword().equals(userRequest.getConfirmPassword())){
+                if (userRequest.getPassword().equals(userRequest.getConfirmPassword())) {
                     user.get().setPassword(passwordEncoder.encode(userRequest.getPassword()));
                     userRepository.save(user.get());
                     return "Success";
-                }else {
+                } else {
                     return "Invalid password";
                 }
-            }else {
+            } else {
                 return "Not found";
             }
         }
         tokenStore.removeToken(token);
         return "Invalid Token";
-
     }
 
     private String buildMail(String name, String link) {
