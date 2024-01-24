@@ -2,6 +2,7 @@ package com.blueberry.service.impl;
 
 import com.blueberry.model.app.Notification;
 import com.blueberry.model.dto.NotificationDTO;
+import com.blueberry.model.dto.NotificationFireStoreDTO;
 import com.blueberry.util.ModelMapperUtil;
 import com.google.cloud.firestore.*;
 import lombok.AllArgsConstructor;
@@ -15,8 +16,7 @@ public class FirestoreService {
     private ModelMapperUtil modelMapperUtil;
 
     public void saveNotification(Notification notification) {
-        NotificationDTO notificationDTO = modelMapperUtil.map(notification, NotificationDTO.class);
-        notificationDTO.setTimeStamp(null);
+        NotificationFireStoreDTO notificationDTO = modelMapperUtil.map(notification, NotificationFireStoreDTO.class);
         notificationDTO.getReceiver().setLastOnline(null);
         notificationDTO.getSender().setLastOnline(null);
 
