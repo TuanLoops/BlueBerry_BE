@@ -52,9 +52,10 @@ public class StatusController {
     public ResponseEntity<List<StatusDTO>> getAllStatusByBodyContaining(@RequestParam("query") String query) {
         AppUser appUser = appUserService.getCurrentAppUser();
         List<AppUser> friendList = friendService.getFriendList(appUser.getId());
-        List<Status> statuses = (List<Status>) statusService.findStatusByNameContaining(appUser, friendList, query);
+        List<Status> statuses = (List<Status>) statusService.findStatusByBodyContaining(appUser, friendList, query);
         return new ResponseEntity<>(modelMapperUtil.mapList(statuses, StatusDTO.class), HttpStatus.OK);
     }
+
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody StatusRequest statusRequest) {
@@ -148,6 +149,18 @@ public class StatusController {
         AppUser appUser = appUserService.findById(id).get();
 
         List<Status> statuses = (List<Status>) statusService.findAllByAuthor(appUser, currentUser);
+        if (statuses.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(modelMapperUtil.mapList(statuses, StatusDTO.class), HttpStatus.OK);
+    }
+
+    @GetMapping("/users/{id}/search")
+    public ResponseEntity<List<StatusDTO>> searchStatusByUserId(@PathVariable Long id,@RequestParam String query) {
+        AppUser currentUser = appUserService.getCurrentAppUser();
+        AppUser appUser = appUserService.findById(id).get();
+
+        List<Status> statuses = (List<Status>) statusService.findAllByAuthorAndBodyContaining(currentUser, appUser,query);
         if (statuses.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }

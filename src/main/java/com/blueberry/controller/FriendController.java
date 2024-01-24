@@ -30,9 +30,9 @@ public class FriendController {
     private ModelMapperUtil modelMapper;
 
     @GetMapping("/list/{userId}")
-    public ResponseEntity<List<AppUser>> getFriendList(@PathVariable Long userId) {
+    public ResponseEntity<List<AppUserDTO>> getFriendList(@PathVariable Long userId) {
         List<AppUser> friends = friendService.getFriendList(userId);
-        return new ResponseEntity<>(friends, HttpStatus.OK);
+        return new ResponseEntity<>(modelMapper.mapList(friends,AppUserDTO.class), HttpStatus.OK);
     }
 
     @GetMapping("/list")

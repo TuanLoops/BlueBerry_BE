@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface StatusService extends GenericService<Status>{
     Optional<Status> findByIdAndDeleted(Long id, boolean deleted);
     Iterable<Status> findAllByAuthor(AppUser currentUser, AppUser user);
+    Iterable<Status> findAllByAuthorAndBodyContaining(AppUser currentUser, AppUser user, String body);
     Iterable<Status> findAllByPrivacy(AppUser user, List<AppUser> friendList);
-    Iterable<Status> findStatusByNameContaining(AppUser user, List<AppUser> friendList, String body);
+    Iterable<Status> findStatusByBodyContaining(AppUser user, List<AppUser> friendList, String body);
 }
