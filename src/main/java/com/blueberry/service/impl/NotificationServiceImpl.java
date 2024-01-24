@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -53,5 +54,25 @@ public class NotificationServiceImpl implements NotificationService {
 
     public void sendNotification(String userId, Notification notification) {
         firestoreService.saveNotification(notification);
+    }
+
+    @Override
+    public Optional<Notification> findById(Long id) {
+        return notificationRepository.findById(id);
+    }
+
+    @Override
+    public Notification save(Notification notification) {
+        return notificationRepository.save(notification);
+    }
+
+    @Override
+    public Iterable<Notification> findAll(){
+        return notificationRepository.findAll();
+    }
+
+    @Override
+    public Iterable<Notification> saveAll(Iterable<Notification> notifications) {
+        return notificationRepository.saveAll(notifications);
     }
 }
