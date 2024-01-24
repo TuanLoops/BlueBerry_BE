@@ -4,17 +4,17 @@ package com.blueberry.service.impl;
 import com.blueberry.model.acc.User;
 import com.blueberry.model.acc.UserPrinciple;
 import com.blueberry.model.app.AppUser;
-import com.blueberry.model.dto.MessageResponse;
+import com.blueberry.model.request.UserRequest;
 import com.blueberry.repository.AppUserRepository;
 import com.blueberry.repository.UserRepository;
-import com.blueberry.service.AppUserService;
 import com.blueberry.service.UserService;
+import com.blueberry.model.acc.Token;
+import com.blueberry.service.token.TokenStore;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +32,10 @@ public class UserServiceImpl implements UserService {
     private EmailService emailService;
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private TokenStore tokenStore;
     private final Long EXPIRE_TIME = 86400000L;
 
     @Override
@@ -128,12 +132,44 @@ public class UserServiceImpl implements UserService {
         Optional<User> user = this.findByEmail(email);
         if (user.isPresent()) {
             AppUser appUser = appUserRepository.findByUser(user.get()).get();
-            String token = jwtService.generateEmailToken(email, EXPIRE_TIME);
+            Token  token = tokenStore.getTokenByEmail(email,false);
+            String jwt = jwtService.generateEmailToken(email, EXPIRE_TIME);
+            if(token!=null) {
+                token.setToken(jwt);
+            }else {
+                tokenStore.storeToken(new Token(jwt, email, false));
+            }
             String fullName = appUser.getFirstName()+" "+appUser.getLastName();
-            emailService.send(email,"Blueberry - Password Reset Request", buildMail(fullName, "http://localhost:5173/reset-password?token=" + token));
+            emailService.send(email,"Blueberry - Password Reset Request", buildMail(fullName, "http://localhost:5173/reset-password?token=" + jwt));
             return "Success";
         }
         return "Failure";
+    }
+
+    @Override
+    public String updatePassword(String token, UserRequest userRequest) {
+        if (token == null || token.isEmpty()) {
+            return null;
+        }
+        if (jwtService.validateEmailToken(token) && tokenStore.isTokenActive(token)) {
+            String email = jwtService.getEmailFromJwtToken(token);
+            Optional<User> user = userRepository.findByEmail(email);
+            tokenStore.removeToken(token);
+            if (user.isPresent()) {
+                if (userRequest.getPassword().equals(userRequest.getConfirmPassword())){
+                    user.get().setPassword(passwordEncoder.encode(userRequest.getPassword()));
+                    userRepository.save(user.get());
+                    return "Success";
+                }else {
+                    return "Invalid password";
+                }
+            }else {
+                return "Not found";
+            }
+        }
+        tokenStore.removeToken(token);
+        return "Invalid Token";
+
     }
 
     private String buildMail(String name, String link) {
@@ -144,7 +180,7 @@ public class UserServiceImpl implements UserService {
                 "        <p>We recently received a request to reset the password for your account. To ensure the security of your account, please follow the instructions below to set a new password:</p>" +
                 "        <p>Click on the following link to access the password reset page:</p>" +
                 "        <p>" +
-                "            <a href="+link+" style=\"background-color: #007BFF; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px; display: inline-block;\">" +
+                "            <a href='"+link+"' style=\"background-color: #007BFF; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px; display: inline-block;\">" +
                 "                Change password" +
                 "            </a>" +
                 "        </p>\n" +
