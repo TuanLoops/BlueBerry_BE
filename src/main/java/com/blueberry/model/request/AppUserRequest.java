@@ -9,7 +9,7 @@ public class AppUserRequest {
     private String firstName;
     private String lastName;
     private LocalDate dob;
-    private int phoneNumber;
+    private String phoneNumber;
     private String hobbies;
     private String address;
 }
