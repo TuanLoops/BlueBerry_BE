@@ -5,7 +5,6 @@ import com.blueberry.model.dto.AppUserDTO;
 import com.blueberry.model.dto.NotificationDTO;
 import com.blueberry.util.ModelMapperUtil;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
@@ -20,9 +19,9 @@ public class NotificationDTOConverter implements Converter<Notification, Notific
         notificationDTO.setReceiver(AppUserDTOConverter.converter(notification.getReceiver()));
         if (notification.getStatus() != null) {
             notificationDTO.setStatusId(notification.getStatus().getId());
-            notificationDTO.setStatusAuthorName(notification.getStatus().getAuthor().getFirstName()+' '+notification.getStatus().getAuthor().getLastName());
+            notificationDTO.setStatusAuthorName(AppUserDTOConverter.converter(notification.getStatus().getAuthor()).getFullName());
         }
-        notificationDTO.setTimeStamp(notification.getTimeStamp());
+        notificationDTO.setTimeStamp(notification.getTimeStamp().toString());
         notificationDTO.setIsRead(notification.getIsRead());
         return notificationDTO;
     }

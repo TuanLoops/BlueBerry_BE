@@ -23,7 +23,7 @@ public class AppUserDTOConverter implements Converter<AppUser, AppUserDTO> {
         appUserDTO.setBannerImage(appUser.getBannerImage());
         appUserDTO.setAvatarImage(appUser.getAvatarImage());
         appUserDTO.setFullName(appUser.getFirstName() + " " + appUser.getLastName());
-        appUserDTO.setLastOnline(appUser.getLastOnline());
+        appUserDTO.setLastOnline(appUser.getLastOnline().toString());
         return appUserDTO;
     }
 }

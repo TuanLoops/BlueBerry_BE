@@ -18,8 +18,10 @@ public class ModelMapperConfig {
         modelMapper.addConverter(new UserDetailsConverter());
         modelMapper.addConverter(new StatusDTOConverter());
         modelMapper.addConverter(new CommentDTOConverter());
-        modelMapper.addConverter(new NotificationDTOConverter());
         modelMapper.addConverter(new NotificationFireStoreDTOConverter());
+        modelMapper.addConverter(new NotificationDTOConverter());
+        modelMapper.addConverter(new ChatRoomDTOConverter());
+        modelMapper.addConverter(new MessageDTOConverter());
         return modelMapper;
     }
 
