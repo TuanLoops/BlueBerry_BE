@@ -12,13 +12,13 @@ import java.util.List;
 public class Notification {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @Enumerated(EnumType.STRING)
     private NotificationType type;
 
     @ManyToOne
+    @JoinColumn(name = "status_id")
     private Status status;
 
     @ManyToOne

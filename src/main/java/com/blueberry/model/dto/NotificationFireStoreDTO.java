@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class NotificationFireStoreDTO {
-    private Long id;
+    private String id;
     private NotificationType type;
     private AppUserDTO sender;
     private AppUserDTO receiver;

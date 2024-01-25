@@ -17,7 +17,7 @@ public interface NotificationService {
 
     void sendNotification(String userId, Notification notification);
 
-    Optional<Notification> findById(Long id);
+    Optional<Notification> findById(String id);
 
     Notification save( Notification notification);
     Iterable<Notification> saveAll(Iterable<Notification> notifications);

@@ -1,8 +1,9 @@
 package com.blueberry.service.impl;
 
+import com.blueberry.model.app.ChatRoom;
 import com.blueberry.model.app.Notification;
+import com.blueberry.model.dto.ChatRoomDTO;
 import com.blueberry.model.dto.NotificationDTO;
-import com.blueberry.model.dto.NotificationFireStoreDTO;
 import com.blueberry.util.ModelMapperUtil;
 import com.google.cloud.firestore.*;
 import lombok.AllArgsConstructor;
@@ -16,11 +17,15 @@ public class FirestoreService {
     private ModelMapperUtil modelMapperUtil;
 
     public void saveNotification(Notification notification) {
-        NotificationFireStoreDTO notificationDTO = modelMapperUtil.map(notification, NotificationFireStoreDTO.class);
-        notificationDTO.getReceiver().setLastOnline(null);
-        notificationDTO.getSender().setLastOnline(null);
+        NotificationDTO notificationDTO = modelMapperUtil.map(notification, NotificationDTO.class);
 
-        firestore.collection("notifications").document(String.valueOf(notification.getId()))
+        firestore.collection("notifications").document(notification.getId())
                 .set(notificationDTO);
+    }
+
+    public void saveChatroom(ChatRoom chatRoom) {
+        ChatRoomDTO chatRoomDTO = modelMapperUtil.map(chatRoom, ChatRoomDTO.class);
+
+        firestore.collection("chat_rooms").document(chatRoom.getId()).set(chatRoomDTO);
     }
 }

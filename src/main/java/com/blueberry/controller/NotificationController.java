@@ -39,7 +39,7 @@ public class NotificationController {
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<?> updateNotification( @PathVariable Long id, @RequestBody NotificationRequest notificationRequest){
+    public ResponseEntity<?> updateNotification( @PathVariable String id, @RequestBody NotificationRequest notificationRequest){
         Optional<Notification> notification = notificationService.findById(id);
         if (notification.isPresent()){
             notification.get().setIsRead(notificationRequest.getIsRead());

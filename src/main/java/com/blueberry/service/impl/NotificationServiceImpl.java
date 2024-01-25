@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.Optional;
 
 @Service
@@ -22,6 +23,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     public Notification saveNotification(AppUser sender, AppUser receiver, NotificationType type, Status status) {
         Notification notification = new Notification();
+        notification.setId(UUID.randomUUID().toString());
         notification.setSender(sender);
         notification.setReceiver(receiver);
         notification.setStatus(status);
@@ -36,6 +38,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     public Notification saveNotification(AppUser sender, AppUser receiver, NotificationType type) {
         Notification notification = new Notification();
+        notification.setId(UUID.randomUUID().toString());
         notification.setSender(sender);
         notification.setReceiver(receiver);
         notification.setType(type);
@@ -57,7 +60,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public Optional<Notification> findById(Long id) {
+    public Optional<Notification> findById(String id) {
         return notificationRepository.findById(id);
     }
 
