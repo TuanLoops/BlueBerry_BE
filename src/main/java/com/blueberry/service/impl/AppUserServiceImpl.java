@@ -58,4 +58,9 @@ public class AppUserServiceImpl implements AppUserService {
     public Iterable<AppUser> findByName(String name, boolean banned) {
         return appUserRepository.findByName(name, banned);
     }
+
+    @Override
+    public Optional<AppUser> findById(long id) {
+        return appUserRepository.findById(id);
+    }
 }

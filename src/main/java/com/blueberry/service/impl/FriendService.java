@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -112,5 +113,32 @@ public class FriendService {
         if (friendshipRepository.findByUserAndFriend(user1, user2).isPresent()) return true;
         return friendshipRepository.findByUserAndFriend(user2, user1).isPresent();
     }
+
+    public List<AppUser> getCommonFriends(AppUser user1, AppUser user2) {
+        List<AppUser> commonFriends = new ArrayList<>();
+
+        List<AppUser> user1Friends = getUserFriends(user1);
+        List<AppUser> user2Friends = getUserFriends(user2);
+
+        for (AppUser friend : user1Friends) {
+            if (user2Friends.contains(friend)) {
+                commonFriends.add(friend);
+            }
+        }
+
+        return commonFriends;
+    }
+
+    private List<AppUser> getUserFriends(AppUser user) {
+        List<Friendship> friendships = friendshipRepository.findByUser(user);
+        List<AppUser> friends = new ArrayList<>();
+
+        for (Friendship friendship : friendships) {
+            friends.add(friendship.getFriend());
+        }
+
+        return friends;
+    }
+
 }
 

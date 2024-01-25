@@ -6,6 +6,7 @@ import com.blueberry.model.app.FriendRequestStatus;
 import com.blueberry.model.dto.AppUserDTO;
 import com.blueberry.model.dto.FriendRequestDTO;
 import com.blueberry.model.request.FriendRequestResponse;
+import com.blueberry.repository.AppUserRepository;
 import com.blueberry.service.AppUserService;
 import com.blueberry.service.impl.FriendService;
 import com.blueberry.util.ModelMapperUtil;
@@ -28,6 +29,7 @@ public class FriendController {
     private FriendService friendService;
     private AppUserService appUserService;
     private ModelMapperUtil modelMapper;
+    private final AppUserRepository appUserRepository;
 
     @GetMapping("/list/{userId}")
     public ResponseEntity<List<AppUserDTO>> getFriendList(@PathVariable Long userId) {
@@ -97,5 +99,19 @@ public class FriendController {
         if (friend.isEmpty()) return new ResponseEntity<>("Friend not found", HttpStatus.NOT_FOUND);
         friendService.unfriend(currentUser, friend.get());
         return new ResponseEntity<>(friend.get(), HttpStatus.OK);
+    }
+
+    @GetMapping("/common-friends/{userId1}/{userId2}")
+    public List<AppUser> getCommonFriends(@PathVariable Long userId1, @PathVariable Long userId2) {
+        Optional<AppUser> user1Optional = appUserRepository.findById(userId1);
+        Optional<AppUser> user2Optional = appUserRepository.findById(userId2);
+
+        if (user1Optional.isPresent() && user2Optional.isPresent()) {
+            AppUser user1 = user1Optional.get();
+            AppUser user2 = user2Optional.get();
+
+            return friendService.getCommonFriends(user1, user2);
+        }
+        return null;
     }
 }
