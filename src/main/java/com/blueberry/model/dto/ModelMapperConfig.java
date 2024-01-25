@@ -24,6 +24,7 @@ public class ModelMapperConfig {
         modelMapper.addConverter(new ChatRoomDTOConverter());
         modelMapper.addConverter(new MessageDTOConverter());
         modelMapper.addConverter(new FriendRequestDTOConverter());
+        modelMapper.addConverter(new ChatRoomFireStoreDTOConverter());
         return modelMapper;
     }
 
