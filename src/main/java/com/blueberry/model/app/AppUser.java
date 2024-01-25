@@ -26,7 +26,7 @@ public class AppUser {
 
     private LocalDate dob;
 
-    private int phoneNumber;
+    private String phoneNumber;
 
     @Column(columnDefinition = "TEXT")
     private String avatarImage;
