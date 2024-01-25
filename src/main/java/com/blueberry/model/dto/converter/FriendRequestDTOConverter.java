@@ -12,18 +12,18 @@ import org.modelmapper.spi.MappingContext;
 @AllArgsConstructor
 public class FriendRequestDTOConverter implements Converter<FriendRequest, FriendRequestDTO> {
 
-    private ModelMapperUtil modelMapper;
-
     @Override
     public FriendRequestDTO convert(MappingContext<FriendRequest, FriendRequestDTO> mappingContext) {
         FriendRequest friendRequest = mappingContext.getSource();
         FriendRequestDTO friendRequestDTO = new FriendRequestDTO();
         friendRequestDTO.setId(friendRequest.getId());
         friendRequestDTO.setStatus(friendRequest.getStatus());
-        friendRequestDTO.setSender(modelMapper.map(friendRequest.getSender(),
-                AppUserDTO.class));
-        friendRequestDTO.setReceiver(modelMapper.map(friendRequest.getReceiver(),
-                AppUserDTO.class));
+        if (friendRequest.getSender()!=null){
+            friendRequestDTO.setSender(AppUserDTOConverter.converter(friendRequest.getSender()));
+        }
+        if (friendRequest.getReceiver()!=null){
+            friendRequestDTO.setReceiver(AppUserDTOConverter.converter(friendRequest.getReceiver()));
+        }
         return friendRequestDTO;
     }
 }
