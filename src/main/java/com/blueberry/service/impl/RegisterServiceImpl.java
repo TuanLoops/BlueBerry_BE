@@ -57,8 +57,8 @@ public class RegisterServiceImpl implements RegisterService {
             userApp.setAvatarImage("https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png");
             userApp.setLastOnline(LocalDateTime.now());
             appUserService.save(userApp);
-            tokenStore.storeToken(new Token(jwt,user.getEmail(),false));
-            emailService.send(userRequest.getEmail(),"MXH Blueberry Xác nhận email", buildMail(fullName, "http://localhost:5173/confirm?token=" + jwt));
+//            tokenStore.storeToken(new Token(jwt,user.getEmail(),false));
+//            emailService.send(userRequest.getEmail(),"MXH Blueberry Xác nhận email", buildMail(fullName, "http://localhost:5173/confirm?token=" + jwt));
             return new ResponseEntity<>(new MessageResponse("Registered successfully !!"), HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(new MessageResponse(e.getMessage()+" !!"), HttpStatus.BAD_REQUEST);
@@ -69,7 +69,7 @@ public class RegisterServiceImpl implements RegisterService {
         return "<div style='font-family: Arial, sans-serif; background-color: #f2f2f2; padding: 20px;'>" +
                 "<div style='background-color: #ffffff; max-width: 600px; margin: 0 auto; padding: 20px; border-radius: 5px;'>" +
                 "<h2 style='color: #007BFF;'>Xác Nhận Email Của Bạn</h2>" +
-                "<p>Xin chào " + name + ",</p>" +
+                "<p>Dear " + name + ",</p>" +
                 "<p>Chào mừng bạn tham gia mạng xã hội <b style='color: blue'>Blueberry</b> của chúng tôi. Vui lòng nhấn vào nút bên dưới để kích hoạt tài khoản:</p>" +
                 "<p><a href='" + link + "' style='background-color: #007BFF; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px;'>" +
                 "Kích Hoạt</a></p>" +
