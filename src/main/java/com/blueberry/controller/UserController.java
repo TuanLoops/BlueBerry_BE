@@ -64,17 +64,6 @@ public class UserController {
         }
     }
 
-//    @PostMapping("/login/google")
-//    public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> googleLoginData) {
-//    try
-//    {
-//
-//    }
-//    catch ()
-//    {
-//
-//    }
-//    }
 
     @PostMapping("/logout")
     public ResponseEntity<MessageResponse> logout(HttpServletRequest request) {

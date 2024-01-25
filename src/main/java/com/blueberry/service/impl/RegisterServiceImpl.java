@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -54,6 +55,7 @@ public class RegisterServiceImpl implements RegisterService {
             user = userService.save(user);
             userApp.setUser(user);
             userApp.setAvatarImage("https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png");
+            userApp.setLastOnline(LocalDateTime.now());
             appUserService.save(userApp);
             tokenStore.storeToken(new Token(jwt,user.getEmail(),false));
             emailService.send(userRequest.getEmail(),"MXH Blueberry Xác nhận email", buildMail(fullName, "http://localhost:5173/confirm?token=" + jwt));

@@ -60,7 +60,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public Optional<Notification> findById(Long id) {
+    public Optional<Notification> findById(String id) {
         return notificationRepository.findById(id);
     }
 
