@@ -8,6 +8,7 @@ import com.blueberry.service.RegisterService;
 import com.blueberry.service.RoleService;
 import com.blueberry.service.UserService;
 import com.blueberry.service.impl.JwtService;
+import com.blueberry.model.acc.Token;
 import com.blueberry.service.token.TokenStore;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -25,7 +26,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -53,7 +53,8 @@ public class UserController {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             Optional<User> currentUser = userService.findByEmail(user.getEmail());
             if (currentUser.get().isActivated()) {
-                tokenStore.storeToken(jwt);
+                String email = user.getEmail();
+                tokenStore.storeToken(new Token(jwt, email, true));
                 return ResponseEntity.ok(new JwtResponse(jwt, currentUser.get().getId(), userDetails.getUsername(), userDetails.getAuthorities()));
             }
             return new ResponseEntity<>(new MessageResponse("Account has not been activated !!"), HttpStatus.FORBIDDEN);
@@ -78,13 +79,12 @@ public class UserController {
     @PostMapping("/logout")
     public ResponseEntity<MessageResponse> logout(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer "))
-        {
-           authHeader= authHeader.replace("Bearer ", "");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            authHeader = authHeader.replace("Bearer ", "");
         }
         tokenStore.removeToken(authHeader);
         SecurityContextHolder.getContext().setAuthentication(null);
-        return new ResponseEntity<>(new MessageResponse("Logout successful !!"),HttpStatus.OK);
+        return new ResponseEntity<>(new MessageResponse("Logout successful !!"), HttpStatus.OK);
     }
 
     @PostMapping("/register")
@@ -93,7 +93,7 @@ public class UserController {
             return new ResponseEntity<>(new MessageResponse("Email has been used !!"), HttpStatus.CONFLICT);
         }
         if (!userRequest.getPassword().equals(userRequest.getConfirmPassword())) {
-            return new ResponseEntity<>( new MessageResponse("Confirm password is wrong !!"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new MessageResponse("Confirm password is wrong !!"), HttpStatus.BAD_REQUEST);
         }
         return registerService.register(userRequest);
     }
@@ -122,4 +122,30 @@ public class UserController {
         return new ResponseEntity<>(new MessageResponse("Old password is not correct !!"), HttpStatus.FORBIDDEN);
     }
 
+    @GetMapping("forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+        if (email == null) {
+            return new ResponseEntity<>(new MessageResponse("Please enter your email !!"), HttpStatus.BAD_REQUEST);
+        }
+        String result = userService.sendEmail(email);
+        return new ResponseEntity<>(new MessageResponse("OK"), HttpStatus.OK);
+    }
+
+    @PutMapping("reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestBody UserRequest userRequest) {
+        String result = userService.updatePassword(token, userRequest);
+        if (result == null) {
+            return new ResponseEntity<>(new MessageResponse("Token is null!"), HttpStatus.BAD_REQUEST);
+        }
+        if (result.equals("Invalid password")) {
+            return new ResponseEntity<>(new MessageResponse("Confirm password not match!"), HttpStatus.BAD_REQUEST);
+        }
+        if (result.equals("Invalid token")) {
+            return new ResponseEntity<>(new MessageResponse("Token is invalid!"), HttpStatus.BAD_REQUEST);
+        }
+        if (result.equals("Success")) {
+            return new ResponseEntity<>(new MessageResponse("Successfully!"), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
 }

@@ -1,6 +1,7 @@
 package com.blueberry.service;
 
 import com.blueberry.model.acc.User;
+import com.blueberry.model.request.UserRequest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -24,4 +25,7 @@ public interface UserService extends UserDetailsService {
     boolean isRegister(String email);
 
     boolean isCorrectConfirmPassword(User User);
+
+    String sendEmail(String email);
+    String updatePassword(String token, UserRequest userRequest);
 }

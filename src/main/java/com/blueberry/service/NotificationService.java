@@ -6,6 +6,7 @@ import com.blueberry.model.app.NotificationType;
 import com.blueberry.model.app.Status;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface NotificationService {
 
@@ -15,4 +16,12 @@ public interface NotificationService {
     List<Notification> getNotificationsForUser(AppUser receiver);
 
     void sendNotification(String userId, Notification notification);
+
+    Optional<Notification> findById(Long id);
+
+    Notification save( Notification notification);
+    Iterable<Notification> saveAll(Iterable<Notification> notifications);
+
+    Iterable<Notification> findAll();
+
 }

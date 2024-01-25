@@ -9,6 +9,8 @@ import com.blueberry.service.AppUserService;
 import com.blueberry.service.RegisterService;
 import com.blueberry.service.RoleService;
 import com.blueberry.service.UserService;
+import com.blueberry.model.acc.Token;
+import com.blueberry.service.token.TokenStore;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +31,7 @@ public class RegisterServiceImpl implements RegisterService {
     private AppUserService appUserService;
     private EmailService emailService;
     private RoleService roleService;
+    private TokenStore tokenStore;
 
     private JwtService jwtService;
     private final Long EXPIRE_TIME = 86400000L;
@@ -47,12 +50,13 @@ public class RegisterServiceImpl implements RegisterService {
         userApp.setLastName(userRequest.getLastName());
         String fullName = userRequest.getFirstName() + " " + userRequest.getLastName();
         try {
-            String token = jwtService.generateEmailToken(user.getEmail(), EXPIRE_TIME);
+            String jwt = jwtService.generateEmailToken(user.getEmail(), EXPIRE_TIME);
             user = userService.save(user);
             userApp.setUser(user);
             userApp.setAvatarImage("https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png");
             appUserService.save(userApp);
-            emailService.send(userRequest.getEmail(),"MXH Blueberry Xác nhận email", buildMail(fullName, "http://localhost:5173/confirm?token=" + token));
+            tokenStore.storeToken(new Token(jwt,user.getEmail(),false));
+            emailService.send(userRequest.getEmail(),"MXH Blueberry Xác nhận email", buildMail(fullName, "http://localhost:5173/confirm?token=" + jwt));
             return new ResponseEntity<>(new MessageResponse("Registered successfully !!"), HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(new MessageResponse(e.getMessage()+" !!"), HttpStatus.BAD_REQUEST);
@@ -75,10 +79,10 @@ public class RegisterServiceImpl implements RegisterService {
 
     @Override
     public ResponseEntity<?> verificationUser(String token) {
-        if (token == null) {
+        if (token == null ||token.isEmpty()) {
             return new ResponseEntity<>( new MessageResponse("Token required"),HttpStatus.BAD_REQUEST);
         }
-        if (jwtService.validateEmailToken(token)) {
+        if (jwtService.validateEmailToken(token) && tokenStore.isTokenActive(token)) {
             String email = jwtService.getEmailFromJwtToken(token);
             Optional<User> user = userService.findByEmail(email);
             if (user.isPresent()) {
@@ -87,9 +91,11 @@ public class RegisterServiceImpl implements RegisterService {
                 }
                 user.get().setActivated(true);
                 userService.save(user.get());
+                tokenStore.removeToken(token);
                 return new ResponseEntity<>(new MessageResponse("Account has been activated successfully !!"),HttpStatus.OK);
             }
         }
+        tokenStore.removeToken(token);
         return new ResponseEntity<>(new MessageResponse("Account activation failed !!"),HttpStatus.BAD_REQUEST);
     }
 
@@ -98,7 +104,13 @@ public class RegisterServiceImpl implements RegisterService {
         Optional<User> user = userService.findByEmail(email);
         if (user.isPresent()) {
             AppUser appUser = appUserService.findByUserName(user.get().getEmail());
-            String token = jwtService.generateEmailToken(email, EXPIRE_TIME);
+            String jwt = jwtService.generateEmailToken(email, EXPIRE_TIME);
+            Token  token = tokenStore.getTokenByEmail(email,false);
+            if(token!=null) {
+                token.setToken(jwt);
+            }else {
+                tokenStore.storeToken(new Token(jwt, email, false));
+            }
             String fullName = appUser.getFirstName()+" "+appUser.getLastName();
             emailService.send(email,"MXH Blueberry Xác nhận email", buildMail(fullName, "http://localhost:5173/confirm?token=" + token));
             return new ResponseEntity<>(new MessageResponse("Email has been sent !!"),HttpStatus.OK);
