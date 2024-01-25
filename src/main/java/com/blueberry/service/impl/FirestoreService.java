@@ -1,6 +1,8 @@
 package com.blueberry.service.impl;
 
+import com.blueberry.model.app.ChatRoom;
 import com.blueberry.model.app.Notification;
+import com.blueberry.model.dto.ChatRoomDTO;
 import com.blueberry.model.dto.NotificationDTO;
 import com.blueberry.util.ModelMapperUtil;
 import com.google.cloud.firestore.*;
@@ -16,11 +18,14 @@ public class FirestoreService {
 
     public void saveNotification(Notification notification) {
         NotificationDTO notificationDTO = modelMapperUtil.map(notification, NotificationDTO.class);
-        notificationDTO.setTimeStamp(null);
-        notificationDTO.getReceiver().setLastOnline(null);
-        notificationDTO.getSender().setLastOnline(null);
 
-        firestore.collection("notifications").document(String.valueOf(notification.getId()))
+        firestore.collection("notifications").document(notification.getId())
                 .set(notificationDTO);
+    }
+
+    public void saveChatroom(ChatRoom chatRoom) {
+        ChatRoomDTO chatRoomDTO = modelMapperUtil.map(chatRoom, ChatRoomDTO.class);
+
+        firestore.collection("chat_rooms").document(chatRoom.getId()).set(chatRoomDTO);
     }
 }

@@ -7,11 +7,11 @@ import com.blueberry.model.app.Status;
 import com.blueberry.repository.NotificationRepository;
 import com.blueberry.service.NotificationService;
 import lombok.AllArgsConstructor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -22,6 +22,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     public Notification saveNotification(AppUser sender, AppUser receiver, NotificationType type, Status status) {
         Notification notification = new Notification();
+        notification.setId(UUID.randomUUID().toString());
         notification.setSender(sender);
         notification.setReceiver(receiver);
         notification.setStatus(status);
@@ -36,6 +37,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     public Notification saveNotification(AppUser sender, AppUser receiver, NotificationType type) {
         Notification notification = new Notification();
+        notification.setId(UUID.randomUUID().toString());
         notification.setSender(sender);
         notification.setReceiver(receiver);
         notification.setType(type);
